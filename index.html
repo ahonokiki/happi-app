@@ -173,6 +173,7 @@
   .hist-left { min-width: 0; }
   .hist-date { font-size: 11px; color: #b6a6cf; margin-top: 3px; font-weight: 700; }
   .hist-eq { font-size: 16px; font-weight: 800; color: #8a78a8; }
+  .hist-sub { font-size: 12.5px; font-weight: 700; color: #9a86b5; margin-top: 2px; }
   .hist-eq .p { color: var(--pink-deep); font-size: 18px; }
   .hist-eq .y { color: var(--mint-deep); font-size: 18px; }
   .hist-eq .s { color: #cbb8e0; margin: 0 5px; }
@@ -347,7 +348,7 @@
     <div id="hist-list"><div class="empty">履歴はまだありません</div></div>
     <button class="clear-all" id="clear-all">🗑 履歴をすべて消す</button>
     <div class="sync-note" id="sync-note"></div>
-    <div class="ver">ver. 18（RMTハピ ÷0.7換算）</div>
+    <div class="ver">ver. 19（履歴1件にまとめ）</div>
   </div>
 </div>
 
@@ -546,22 +547,50 @@
     saveHistory(dir, v, outOf(dir, v));
   }
 
+  // 上のカード（一発計算）：マルシェ＋RMTを1件にまとめて記録
+  var lastKeyMulti = null;
+  function currentMulti() {
+    var v = parseFloat(amount.value);
+    if (isNaN(v) || v === 0) return null;
+    var marche = v / divisor() * rate;                 // マルシェのハピ
+    var rmtYen = setPriceOf(v);                          // RMTの設定額（円）
+    var rmtHapi = Math.round(rmtYen) / divisor() * rate; // RMTをハピ換算
+    return { v: v, marche: marche, rmtYen: rmtYen, rmtHapi: rmtHapi };
+  }
+  function autoSaveMulti() {
+    var m = currentMulti();
+    if (!m) return;
+    var key = 'm:' + m.v + ':' + fee + ':' + rate + ':' + saleFee;
+    if (lastKeyMulti === key) return;
+    lastKeyMulti = key;
+    var entry = { id: Date.now(), dir: 'm', in: m.v, marche: m.marche,
+                  rmtYen: m.rmtYen, rmtHapi: m.rmtHapi, fee: fee, sfee: saleFee, rate: rate };
+    histLog.unshift(entry);
+    if (histLog.length > 100) histLog = histLog.slice(0, 100);
+    renderHistory();
+    lsSet('happi_history', JSON.stringify(histLog));
+    toast('履歴に保存しました');
+    if (webhook) {
+      postSheet({ type: 'add', id: entry.id, dir: 'm', in: m.v, out: m.marche, fee: fee, rate: rate }).catch(function () {});
+    }
+  }
+
   // 入力中はリアルタイム計算のみ（上の入力はハピとRMTの両方を更新）
   amount.addEventListener('input', function () { calc1(); calc3(); });
   happi.addEventListener('input', calc2);
 
   // 入力を確定したら履歴に保存：PCはEnter、iPhoneはキーボードの✓（完了→change）
-  amount.addEventListener('change', function () { autoSave('h'); autoSave('f'); });
+  amount.addEventListener('change', function () { autoSaveMulti(); });
   happi.addEventListener('change', function () { autoSave('y'); });
   amount.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' || e.keyCode === 13) { autoSave('h'); autoSave('f'); amount.blur(); }
+    if (e.key === 'Enter' || e.keyCode === 13) { autoSaveMulti(); amount.blur(); }
   });
   happi.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' || e.keyCode === 13) { autoSave('y'); happi.blur(); }
   });
 
   document.getElementById('clear1').addEventListener('click', function () {
-    amount.value = ''; calc1(); calc3(); lastKey.h = null; lastKey.f = null; amount.focus();
+    amount.value = ''; calc1(); calc3(); lastKeyMulti = null; amount.focus();
   });
   document.getElementById('clear2').addEventListener('click', function () {
     happi.value = ''; calc2(); lastKey.y = null; happi.focus();
@@ -592,9 +621,24 @@
     autoSave(dir);
   }
 
-  document.getElementById('copy1').addEventListener('click', function () { copyResult('h'); });
+  // 上カード：コピーした値を渡しつつ、履歴は1件（マルシェ＋RMT）にまとめる
+  document.getElementById('copy1').addEventListener('click', function () {
+    var m = currentMulti();
+    if (!m) { toast('先に数字を入れてください', true); return; }
+    copyText(String(Math.round(m.marche)))
+      .then(function () { toast('📋 コピー：' + fmt(m.marche) + 'ハピ'); })
+      .catch(function () { toast('📋 コピーしました'); });
+    autoSaveMulti();
+  });
+  document.getElementById('copy3').addEventListener('click', function () {
+    var m = currentMulti();
+    if (!m) { toast('先に数字を入れてください', true); return; }
+    copyText(String(Math.round(m.rmtYen)))
+      .then(function () { toast('📋 コピー：' + fmt(m.rmtYen) + '円'); })
+      .catch(function () { toast('📋 コピーしました'); });
+    autoSaveMulti();
+  });
   document.getElementById('copy2').addEventListener('click', function () { copyResult('y'); });
-  document.getElementById('copy3').addEventListener('click', function () { copyResult('f'); });
 
   // ===== 履歴 =====
   function saveHistory(dir, inVal, outVal) {
@@ -623,6 +667,11 @@
 
   // 履歴1件の式 表示
   function histEqHtml(e) {
+    if (e.dir === 'm') {  // 一発計算（マルシェ＋RMTまとめ）
+      return '手取り<span class="p">' + fmt(e.in) + '</span>円' +
+        '<div class="hist-sub">マルシェ <span class="p">' + fmt(e.marche) + '</span>ハピ' +
+        '　／　RMT <span class="p">' + fmt(e.rmtHapi) + '</span>ハピ（<span class="y">' + fmt(e.rmtYen) + '</span>円）</div>';
+    }
     if (e.dir === 'f') {  // 手取り→設定価格
       return '設定<span class="y">' + fmt(e.out) + '</span>円<span class="s">＝</span>' +
              '手取り<span class="p">' + fmt(e.in) + '</span>円';
@@ -643,7 +692,9 @@
     }
     clearAll.style.display = 'block';
     list.innerHTML = histLog.map(function (e, i) {
-      var tag = e.dir === 'f'
+      var tag = e.dir === 'm'
+        ? 'マルシェ' + fmtNum(e.fee) + '%／RMT' + fmtNum(e.sfee) + '%'
+        : e.dir === 'f'
         ? 'RMT手数料' + fmtNum(e.fee) + '%'
         : 'マルシェ手数料' + fmtNum(e.fee) + '% ／ ' + fmtNum(e.rate) + 'ハピ/円';
       return '<div class="hist-item" data-index="' + i + '">' +
