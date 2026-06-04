@@ -302,9 +302,9 @@
       <div class="eq res-rmt">
         <div class="res-label">RMT（現金）で売るなら</div>
         <div class="line">
-          <span class="num big" id="setOut">0</span><span class="u">円に設定</span>
+          <span class="num big" id="rmtHapi">0</span><span class="u clo"><svg class="clover"><use href="#clover"/></svg></span><span class="u">ハピ</span>
           <span class="eqsign">＝</span>
-          <span class="u">手取り</span><span class="num sub" id="netEcho">0</span><span class="u">円</span>
+          <span class="num sub" id="setOut">0</span><span class="u">円</span>
         </div>
         <div class="fee-note" id="fee-note"></div>
       </div>
@@ -347,7 +347,7 @@
     <div id="hist-list"><div class="empty">履歴はまだありません</div></div>
     <button class="clear-all" id="clear-all">🗑 履歴をすべて消す</button>
     <div class="sync-note" id="sync-note"></div>
-    <div class="ver">ver. 16（レート自動計算）</div>
+    <div class="ver">ver. 17（RMTもハピ表記）</div>
   </div>
 </div>
 
@@ -495,7 +495,7 @@
   var echo1 = document.getElementById('echo1');
   var echo2 = document.getElementById('echo2');
   var setOut = document.getElementById('setOut');
-  var netEcho = document.getElementById('netEcho');
+  var rmtHapi = document.getElementById('rmtHapi');
   var feeNote = document.getElementById('fee-note');
 
   function calc1() {
@@ -515,13 +515,13 @@
   function calc3() {
     var v = parseFloat(amount.value);   // 一発計算：上の入力(手取り)を共用
     if (isNaN(v)) {
-      setOut.textContent = '0'; netEcho.textContent = '0';
+      setOut.textContent = '0'; rmtHapi.textContent = '0';
       feeNote.textContent = 'RMT手数料 ' + fmtNum(saleFee) + '%';
       return;
     }
-    var price = setPriceOf(v);
+    var price = setPriceOf(v);          // RMT設定額（円）
     setOut.textContent = fmt(price);
-    netEcho.textContent = fmt(v);
+    rmtHapi.textContent = fmt(price * rate);   // 設定額をハピ換算（円 × レート）
     feeNote.textContent = 'RMT手数料 ' + fmtNum(saleFee) + '%（差し引き ' + fmt(price - v) + '円）';
   }
   function recalc() { calc1(); calc2(); calc3(); }
