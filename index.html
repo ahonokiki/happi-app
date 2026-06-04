@@ -347,9 +347,13 @@
   var DEFAULT_RATE = 12.5;  // 1円 = 12.5ハピ
   var SAVE_DELAY = 3000;    // 入力停止からこの時間（ms）で自動保存
 
+  // 最初から入れておくWebhook URL（端末で未設定のときはこれを使う）
+  var DEFAULT_WEBHOOK = 'https://script.google.com/macros/s/AKfycbwTOh5WVf-Zw9VKxtSGpHmU9YasfLCGPI9jtbfqgQ7sN-mW1QaU7PVi2fTJPw7yAcofvg/exec';
+
   var fee  = parseFloat(localStorage.getItem('happi_fee'))  || DEFAULT_FEE;
   var rate = parseFloat(localStorage.getItem('happi_rate')) || DEFAULT_RATE;
-  var webhook = localStorage.getItem('happi_webhook') || '';
+  var webhook = localStorage.getItem('happi_webhook');
+  if (webhook === null) webhook = DEFAULT_WEBHOOK;   // 一度も保存していなければ既定を使う
   var history = JSON.parse(localStorage.getItem('happi_history') || '[]');
 
   function divisor() { return 1 - fee / 100; }
