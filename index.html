@@ -137,6 +137,24 @@
     display: block; text-align: center; margin-top: 14px; font-size: 12px;
     color: #9ca3af; cursor: pointer; text-decoration: underline;
   }
+  .modal .urlinput {
+    width: 100%; padding: 11px; border: 2px solid #d1d5db; border-radius: 10px;
+    font-size: 13px; font-family: inherit; outline: none;
+  }
+  .modal .urlinput:focus { border-color: #2563eb; }
+  .modal hr { border: none; border-top: 1px solid #e5e7eb; margin: 20px 0; }
+
+  /* トースト */
+  #toast {
+    position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(20px);
+    background: #1f2937; color: #fff; padding: 12px 20px; border-radius: 10px;
+    font-size: 14px; opacity: 0; pointer-events: none; transition: all .25s; z-index: 100;
+    max-width: 90%; text-align: center;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast.err { background: #b91c1c; }
+
+  .sync-note { font-size: 12px; color: #9ca3af; text-align: center; padding: 6px 0 0; }
 </style>
 </head>
 <body>
@@ -187,6 +205,7 @@
     <h2>計算履歴</h2>
     <div id="hist-list"><div class="empty">履歴はまだありません</div></div>
     <button class="clear-all" id="clear-all">🗑 履歴をすべて消す</button>
+    <div class="sync-note" id="sync-note"></div>
   </div>
 </div>
 
@@ -211,13 +230,21 @@
 
     <div class="preview" id="set-preview"></div>
 
+    <hr>
+
+    <label for="set-webhook">スプレッドシート連携（Webhook URL）</label>
+    <p class="hint" style="margin:0 0 6px">入れると履歴が全端末で共有されます。空ならこの端末だけに保存。</p>
+    <input class="urlinput" id="set-webhook" type="text" placeholder="https://script.google.com/macros/s/.../exec">
+
     <div class="modal-actions">
       <button class="cancel" id="set-cancel">キャンセル</button>
       <button class="save" id="set-save">保存</button>
     </div>
-    <span class="reset-link" id="set-reset">初期値に戻す（手数料30％・レート12.5）</span>
+    <span class="reset-link" id="set-reset">計算を初期値に戻す（手数料30％・レート12.5）</span>
   </div>
 </div>
+
+<div id="toast"></div>
 
 <script>
   var DEFAULT_FEE = 30;     // ％（÷0.7 と同じ）
@@ -225,7 +252,48 @@
 
   var fee  = parseFloat(localStorage.getItem('happi_fee'))  || DEFAULT_FEE;
   var rate = parseFloat(localStorage.getItem('happi_rate')) || DEFAULT_RATE;
+  var webhook = localStorage.getItem('happi_webhook') || '';
   var history = JSON.parse(localStorage.getItem('happi_history') || '[]');
+
+  // ===== トースト =====
+  var toastTimer = null;
+  function toast(msg, isErr) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = isErr ? 'show err' : 'show';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.className = ''; }, 2600);
+  }
+
+  // ===== スプレッドシート連携 =====
+  function postSheet(payload) {
+    if (!webhook) return Promise.resolve(null);
+    return fetch(webhook, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    }).then(function (r) { return r.json(); });
+  }
+
+  function fetchSheet() {
+    if (!webhook) return;
+    document.getElementById('sync-note').textContent = '同期中…';
+    fetch(webhook + '?action=list')
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data && data.ok && Array.isArray(data.items)) {
+          history = data.items;
+          localStorage.setItem('happi_history', JSON.stringify(history));
+          renderHistory();
+          document.getElementById('sync-note').textContent = '✅ スプレッドシートと同期済み';
+        } else {
+          document.getElementById('sync-note').textContent = '⚠ 同期エラー';
+        }
+      })
+      .catch(function () {
+        document.getElementById('sync-note').textContent = '⚠ 同期できません（この端末の履歴を表示中）';
+      });
+  }
 
   // 係数（÷する数）= 1 - 手数料率
   function divisor() { return 1 - fee / 100; }
@@ -269,16 +337,27 @@
   // ===== 履歴 =====
   function saveHistory(dir, inVal, outVal) {
     if (isNaN(inVal) || inVal === 0) return;
-    history.unshift({
+    var entry = {
+      id: Date.now(),
       dir: dir,            // 'h' = 希望→ハピ, 'y' = ハピ→希望
       in: inVal,
       out: outVal,
       fee: fee,
       rate: rate
-    });
-    if (history.length > 30) history = history.slice(0, 30);
+    };
+    history.unshift(entry);
+    if (history.length > 100) history = history.slice(0, 100);
     localStorage.setItem('happi_history', JSON.stringify(history));
     renderHistory();
+    if (webhook) {
+      postSheet({ type: 'add', id: entry.id, dir: dir, in: inVal, out: outVal, fee: fee, rate: rate })
+        .then(function (res) {
+          toast(res && res.ok ? '✅ スプレッドシートに保存しました' : '⚠ シート保存に失敗', !(res && res.ok));
+        })
+        .catch(function () { toast('⚠ シート保存に失敗（この端末には保存済み）', true); });
+    } else {
+      toast('履歴に保存しました');
+    }
   }
 
   document.getElementById('save1').addEventListener('click', function () {
@@ -370,9 +449,14 @@
   }
 
   function deleteHistory(i) {
+    var removed = history[i];
     history.splice(i, 1);
     localStorage.setItem('happi_history', JSON.stringify(history));
     renderHistory();
+    if (webhook && removed && removed.id) {
+      postSheet({ type: 'delete', id: removed.id })
+        .catch(function () { toast('⚠ シート側の削除に失敗', true); });
+    }
   }
 
   function loadHistory(i) {
@@ -387,10 +471,15 @@
   }
 
   document.getElementById('clear-all').addEventListener('click', function () {
-    if (!confirm('履歴をすべて消しますか？')) return;
+    var msg = webhook ? 'スプレッドシートの履歴もすべて消しますか？' : '履歴をすべて消しますか？';
+    if (!confirm(msg)) return;
     history = [];
     localStorage.setItem('happi_history', JSON.stringify(history));
     renderHistory();
+    if (webhook) {
+      postSheet({ type: 'clear' })
+        .catch(function () { toast('⚠ シート側の全消しに失敗', true); });
+    }
   });
 
   // ===== 設定モーダル =====
@@ -409,9 +498,12 @@
   setFee.addEventListener('input', updatePreview);
   setRate.addEventListener('input', updatePreview);
 
+  var setWebhook = document.getElementById('set-webhook');
+
   function openSettings() {
     setFee.value = fee;
     setRate.value = rate;
+    setWebhook.value = webhook;
     updatePreview();
     modal.classList.add('show');
   }
@@ -431,9 +523,17 @@
     fee = f; rate = r;
     localStorage.setItem('happi_fee', fee);
     localStorage.setItem('happi_rate', rate);
+
+    var newHook = setWebhook.value.trim();
+    var hookChanged = newHook !== webhook;
+    webhook = newHook;
+    localStorage.setItem('happi_webhook', webhook);
+
     renderFormulas();
     recalc();
     closeSettings();
+    if (hookChanged && webhook) fetchSheet();   // 連携先が変わったら取り込み
+    else if (hookChanged) document.getElementById('sync-note').textContent = '';
   });
 
   document.getElementById('set-reset').addEventListener('click', function () {
@@ -445,6 +545,7 @@
   // ===== 初期描画 =====
   renderFormulas();
   renderHistory();
+  fetchSheet();   // Webhook設定済みならスプレッドシートから最新を取り込み
 </script>
 </body>
 </html>
