@@ -348,7 +348,7 @@
     <div id="hist-list"><div class="empty">履歴はまだありません</div></div>
     <button class="clear-all" id="clear-all">🗑 履歴をすべて消す</button>
     <div class="sync-note" id="sync-note"></div>
-    <div class="ver">ver. 19（履歴1件にまとめ）</div>
+    <div class="ver">ver. 20（シート連動ON）</div>
   </div>
 </div>
 
@@ -404,9 +404,8 @@
   var DEFAULT_FEE = 30;     // ％（÷0.7 と同じ）
   var DEFAULT_RATE = 12.5;  // 1円 = 12.5ハピ
 
-  // Webhookの既定値。GASのアクセスが「全員」に直るまでは空（＝端末保存のみ）にしておく。
-  // 直したら下にURLを入れれば全端末共有が復活する。
-  var DEFAULT_WEBHOOK = '';
+  // Webhookの既定値（端末で未設定のときはこれを使う）。GASを「全員」で再デプロイすれば共有が有効になる。
+  var DEFAULT_WEBHOOK = 'https://script.google.com/macros/s/AKfycbwTOh5WVf-Zw9VKxtSGpHmU9YasfLCGPI9jtbfqgQ7sN-mW1QaU7PVi2fTJPw7yAcofvg/exec';
 
   // iPhone Safari のプライベートモード等で localStorage が使えなくても落ちないようにする
   function lsGet(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } }
@@ -419,7 +418,7 @@
   var rate = parseFloat(lsGet('happi_rate')) || DEFAULT_RATE;
   var saleFee = parseFloat(lsGet('happi_salefee')); if (isNaN(saleFee)) saleFee = DEFAULT_SALEFEE;
   var webhook = lsGet('happi_webhook');
-  if (webhook === null) webhook = DEFAULT_WEBHOOK;   // 一度も保存していなければ既定を使う
+  if (!webhook) webhook = DEFAULT_WEBHOOK;   // 未設定・空なら既定URLを使う
   var histLog;
   try { histLog = JSON.parse(lsGet('happi_history') || '[]'); } catch (e) { histLog = []; }
   if (!Array.isArray(histLog)) histLog = [];
@@ -448,6 +447,19 @@
     }).then(function (r) { return r.json(); });
   }
 
+  // 履歴1件を人が読める文字列に（スプレッドシートの「表示」列用）
+  function histPlain(e) {
+    if (e.dir === 'm') return '手取り' + fmt(e.in) + '円 → マルシェ' + fmt(e.marche) + 'ハピ／RMT' + fmt(e.rmtHapi) + 'ハピ(' + fmt(e.rmtYen) + '円)';
+    if (e.dir === 'f') return '設定' + fmt(e.out) + '円＝手取り' + fmt(e.in) + '円';
+    if (e.dir === 'y') return fmt(e.in) + 'ハピ＝' + fmt(e.out) + '円';
+    return fmt(e.out) + 'ハピ＝' + fmt(e.in) + '円';
+  }
+  // 履歴1件をスプレッドシートへ送る（全項目をJSONで）
+  function syncAdd(entry) {
+    if (!webhook) return;
+    postSheet({ type: 'add', entry: entry, label: histPlain(entry) }).catch(function () {});
+  }
+
   function fetchSheet() {
     if (!webhook) { document.getElementById('sync-note').textContent = ''; return; }
     document.getElementById('sync-note').textContent = '同期中…';
@@ -463,19 +475,17 @@
               renderHistory();
             } else if (histLog.length > 0) {
               // シートが空でも端末の履歴は消さない。逆にシートへ送って同期
-              histLog.forEach(function (e) {
-                if (e && e.id != null) {
-                  postSheet({ type: 'add', id: e.id, dir: e.dir, in: e.in, out: e.out, fee: e.fee, rate: e.rate });
-                }
-              });
+              histLog.forEach(function (e) { if (e && e.id != null) syncAdd(e); });
             }
           }
           // 設定も共有
           if (data.settings && data.settings.fee != null && data.settings.rate != null) {
             fee = Number(data.settings.fee);
             rate = Number(data.settings.rate);
+            if (data.settings.sfee != null) saleFee = Number(data.settings.sfee);
             lsSet('happi_fee', fee);
             lsSet('happi_rate', rate);
+            lsSet('happi_salefee', saleFee);
             recalc();
           }
           document.getElementById('sync-note').textContent = '✅ スプレッドシートと同期済み';
@@ -570,9 +580,7 @@
     renderHistory();
     lsSet('happi_history', JSON.stringify(histLog));
     toast('履歴に保存しました');
-    if (webhook) {
-      postSheet({ type: 'add', id: entry.id, dir: 'm', in: m.v, out: m.marche, fee: fee, rate: rate }).catch(function () {});
-    }
+    syncAdd(entry);
   }
 
   // 入力中はリアルタイム計算のみ（上の入力はハピとRMTの両方を更新）
@@ -649,11 +657,7 @@
     renderHistory();                               // まず画面に出す（保存が失敗しても表示は出る）
     lsSet('happi_history', JSON.stringify(histLog)); // 端末に保存（使えない環境でも落ちない）
     toast('履歴に保存しました');
-    // スプレッドシート連携は裏で静かに試す（失敗しても端末には保存済みなので騒がない）
-    if (webhook) {
-      postSheet({ type: 'add', id: entry.id, dir: dir, in: inVal, out: outVal, fee: fee, rate: rate })
-        .catch(function () {});
-    }
+    syncAdd(entry);   // スプレッドシートへ（失敗しても端末には保存済み）
   }
 
   // 日時 yyyy/mm/dd HH:MM
@@ -835,7 +839,7 @@
       alert('マルシェ手数料・RMT手数料は0〜99％、レートはハピと円を正しく入れてください。');
       return;
     }
-    var feeOrRateChanged = (f !== fee || r !== rate);
+    var feeOrRateChanged = (f !== fee || r !== rate || sf !== saleFee);
     fee = f; rate = r; saleFee = sf;
     lsSet('happi_fee', fee);
     lsSet('happi_rate', rate);
@@ -852,7 +856,7 @@
     closeSettings();
 
     if (webhook && feeOrRateChanged) {
-      postSheet({ type: 'save_settings', fee: fee, rate: rate }).catch(function () {});
+      postSheet({ type: 'save_settings', fee: fee, rate: rate, sfee: saleFee }).catch(function () {});
     }
     if (hookChanged && webhook) fetchSheet();
     else if (hookChanged) document.getElementById('sync-note').textContent = '';
