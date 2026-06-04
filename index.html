@@ -348,7 +348,7 @@
     <div id="hist-list"><div class="empty">履歴はまだありません</div></div>
     <button class="clear-all" id="clear-all">🗑 履歴をすべて消す</button>
     <div class="sync-note" id="sync-note"></div>
-    <div class="ver">ver. 20（シート連動ON）</div>
+    <div class="ver">ver. 21（削除はシートに残す）</div>
   </div>
 </div>
 
@@ -423,6 +423,16 @@
   try { histLog = JSON.parse(lsGet('happi_history') || '[]'); } catch (e) { histLog = []; }
   if (!Array.isArray(histLog)) histLog = [];
 
+  // アプリ上で消した履歴の管理（スプレッドシートには残す＝倉庫として保持）
+  var deletedIds;
+  try { deletedIds = JSON.parse(lsGet('happi_deleted') || '[]'); } catch (e) { deletedIds = []; }
+  if (!Array.isArray(deletedIds)) deletedIds = [];
+  var clearedBefore = parseFloat(lsGet('happi_cleared_before')) || 0;  // この時刻以前はアプリ非表示
+
+  function isDeleted(id) { for (var i = 0; i < deletedIds.length; i++) { if (deletedIds[i] === id) return true; } return false; }
+  function isVisible(e) { return e && e.id != null && !isDeleted(e.id) && e.id > clearedBefore; }
+  histLog = histLog.filter(isVisible);   // 起動時も非表示分を除外
+
   function divisor() { return 1 - fee / 100; }
   function fmt(n) { return Math.round(n).toLocaleString('ja-JP'); }
   function fmtNum(n) { return (Math.round(n * 100) / 100).toLocaleString('ja-JP'); }
@@ -468,15 +478,16 @@
       .then(function (data) {
         if (data && data.ok) {
           if (Array.isArray(data.items)) {
-            if (data.items.length > 0) {
-              // シートにデータあり → それを正とする
-              histLog = data.items;
-              lsSet('happi_history', JSON.stringify(histLog));
-              renderHistory();
-            } else if (histLog.length > 0) {
-              // シートが空でも端末の履歴は消さない。逆にシートへ送って同期
-              histLog.forEach(function (e) { if (e && e.id != null) syncAdd(e); });
-            }
+            // シート＋端末をidで統合し、アプリで消した分・全消し以前を除いて表示
+            var byId = {};
+            histLog.forEach(function (e) { if (e && e.id != null) byId[e.id] = e; });
+            data.items.forEach(function (e) { if (e && e.id != null) byId[e.id] = e; });
+            var merged = [];
+            for (var k in byId) { if (isVisible(byId[k])) merged.push(byId[k]); }
+            merged.sort(function (a, b) { return (b.id || 0) - (a.id || 0); });
+            histLog = merged;
+            lsSet('happi_history', JSON.stringify(histLog));
+            renderHistory();
           }
           // 設定も共有
           if (data.settings && data.settings.fee != null && data.settings.rate != null) {
@@ -758,12 +769,14 @@
 
   function deleteHistory(i) {
     var removed = histLog[i];
+    if (removed && removed.id != null && !isDeleted(removed.id)) {
+      deletedIds.push(removed.id);
+      lsSet('happi_deleted', JSON.stringify(deletedIds));
+    }
     histLog.splice(i, 1);
     lsSet('happi_history', JSON.stringify(histLog));
     renderHistory();
-    if (webhook && removed && removed.id) {
-      postSheet({ type: 'delete', id: removed.id }).catch(function () {});
-    }
+    // スプレッドシートの行は消さない（倉庫として残す）
   }
 
   function loadHistory(i) {
@@ -779,12 +792,15 @@
   }
 
   document.getElementById('clear-all').addEventListener('click', function () {
-    var msg = webhook ? 'スプレッドシートの履歴もすべて消しますか？' : '履歴をすべて消しますか？';
-    if (!confirm(msg)) return;
+    if (!confirm('アプリの履歴を消しますか？（スプレッドシートには記録が残ります）')) return;
+    var maxId = 0;
+    histLog.forEach(function (e) { if (e && e.id > maxId) maxId = e.id; });
+    clearedBefore = Math.max(Date.now(), maxId + 1);   // これ以前はアプリ非表示
+    lsSet('happi_cleared_before', String(clearedBefore));
     histLog = [];
     lsSet('happi_history', JSON.stringify(histLog));
     renderHistory();
-    if (webhook) { postSheet({ type: 'clear' }).catch(function () {}); }
+    // スプレッドシートの行は消さない（倉庫として残す）
   });
 
   // ===== 設定モーダル =====
