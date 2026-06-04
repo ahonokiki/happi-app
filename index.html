@@ -110,12 +110,20 @@
   .eq .u.clo { color: inherit; }
   .eq .eqsign { font-size: 26px; color: #fff; margin: 0 8px; font-weight: 800; text-shadow: 0 1px 2px rgba(120,80,160,.4); }
 
-  .clear-btn {
-    display: block; width: 100%; margin-top: 16px; padding: 12px; font-size: 14px;
-    border: 2.5px solid #fff; border-radius: 16px; background: #fff; color: #b39ccb;
-    cursor: pointer; font-family: inherit; font-weight: 800; box-shadow: 0 3px 0 #ecdcfb;
+  .btn-row { display: flex; gap: 10px; margin-top: 16px; }
+  .btn-row button {
+    flex: 1; padding: 13px; font-size: 15px; border-radius: 16px; border: 2.5px solid #fff;
+    cursor: pointer; font-family: inherit; font-weight: 800;
   }
-  .clear-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #ecdcfb; }
+  .copy-btn { color: #fff; }
+  .card.toHapi .copy-btn { background: linear-gradient(var(--pink), var(--pink-deep)); box-shadow: 0 4px 0 #e24f8e; }
+  .card.toYen  .copy-btn { background: linear-gradient(var(--mint), var(--mint-deep)); box-shadow: 0 4px 0 #1f9d72; }
+  .card.toHapi .copy-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #e24f8e; }
+  .card.toYen  .copy-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #1f9d72; }
+  .clear-btn {
+    background: #fff; color: #b39ccb; box-shadow: 0 4px 0 #ecdcfb; max-width: 38%;
+  }
+  .clear-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #ecdcfb; }
 
   /* 履歴 */
   .history { padding: 16px 16px 0; }
@@ -251,7 +259,10 @@
           <span class="num sub" id="echo1">0</span><span class="u">円</span>
         </div>
       </div>
-      <button class="clear-btn" id="clear1">クリア</button>
+      <div class="btn-row">
+        <button class="copy-btn" id="copy1">📋 ハピをコピー</button>
+        <button class="clear-btn" id="clear1">クリア</button>
+      </div>
     </div>
 
     <!-- ハピ → 金額 -->
@@ -271,7 +282,10 @@
           <span class="num big" id="out2">0</span><span class="u">円</span>
         </div>
       </div>
-      <button class="clear-btn" id="clear2">クリア</button>
+      <div class="btn-row">
+        <button class="copy-btn" id="copy2">📋 金額をコピー</button>
+        <button class="clear-btn" id="clear2">クリア</button>
+      </div>
     </div>
   </div>
 
@@ -437,6 +451,36 @@
   document.getElementById('clear2').addEventListener('click', function () {
     happi.value = ''; calc2(); clearTimeout(timer2); lastKey.y = null; happi.focus();
   });
+
+  // ===== コピー（押したら即履歴に保存）=====
+  function copyText(txt) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(txt);
+    }
+    var ta = document.createElement('textarea');
+    ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    return Promise.resolve();
+  }
+
+  function copyResult(dir) {
+    var el = dir === 'h' ? amount : happi;
+    var v = parseFloat(el.value);
+    if (isNaN(v) || v === 0) { toast('先に数字を入れてください', true); return; }
+    var outVal = dir === 'h' ? v / divisor() * rate : v * divisor() / rate;
+    var unit = dir === 'h' ? 'ハピ' : '円';
+    copyText(String(Math.round(outVal))).then(function () {
+      toast('📋 コピー：' + fmt(outVal) + unit);
+    });
+    // コピーで即履歴に保存
+    clearTimeout(dir === 'h' ? timer1 : timer2);
+    autoSave(dir);
+  }
+
+  document.getElementById('copy1').addEventListener('click', function () { copyResult('h'); });
+  document.getElementById('copy2').addEventListener('click', function () { copyResult('y'); });
 
   // ===== 履歴 =====
   function saveHistory(dir, inVal, outVal) {
