@@ -132,14 +132,14 @@
   .clear-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #ecdcfb; }
 
   /* 履歴 */
-  .history { padding: 6px 14px 0; }
-  .history h2 {
+  .histLog { padding: 6px 14px 0; }
+  .histLog h2 {
     font-size: 16px; color: #fff; margin: 0 0 8px; font-weight: 800;
     display: flex; align-items: center; gap: 6px;
     -webkit-text-stroke: 3px #fff; paint-order: stroke fill;
     text-shadow: 0 2px 0 #cdb0f2, 0 3px 0 #cdb0f2, 0 4px 0 #bd9bee, 0 6px 6px rgba(160,110,200,.3);
   }
-  .history h2 .txt { color: #b07fe0; }
+  .histLog h2 .txt { color: #b07fe0; }
   .hist-item {
     background: #fff; border-radius: 16px; padding: 10px 14px; margin-bottom: 8px;
     display: flex; align-items: center; justify-content: space-between;
@@ -301,12 +301,12 @@
   </div>
 
   <!-- 履歴 -->
-  <div class="history">
+  <div class="histLog">
     <h2><svg class="clover"><use href="#clover"/></svg> <span class="txt">計算履歴</span></h2>
     <div id="hist-list"><div class="empty">履歴はまだありません</div></div>
     <button class="clear-all" id="clear-all">🗑 履歴をすべて消す</button>
     <div class="sync-note" id="sync-note"></div>
-    <div class="ver">ver. 10（履歴バグ修正）</div>
+    <div class="ver">ver. 11（履歴バグ修正）</div>
   </div>
 </div>
 
@@ -363,9 +363,9 @@
   var rate = parseFloat(lsGet('happi_rate')) || DEFAULT_RATE;
   var webhook = lsGet('happi_webhook');
   if (webhook === null) webhook = DEFAULT_WEBHOOK;   // 一度も保存していなければ既定を使う
-  var history;
-  try { history = JSON.parse(lsGet('happi_history') || '[]'); } catch (e) { history = []; }
-  if (!Array.isArray(history)) history = [];
+  var histLog;
+  try { histLog = JSON.parse(lsGet('happi_history') || '[]'); } catch (e) { histLog = []; }
+  if (!Array.isArray(histLog)) histLog = [];
 
   function divisor() { return 1 - fee / 100; }
   function fmt(n) { return Math.round(n).toLocaleString('ja-JP'); }
@@ -401,12 +401,12 @@
           if (Array.isArray(data.items)) {
             if (data.items.length > 0) {
               // シートにデータあり → それを正とする
-              history = data.items;
-              lsSet('happi_history', JSON.stringify(history));
+              histLog = data.items;
+              lsSet('happi_history', JSON.stringify(histLog));
               renderHistory();
-            } else if (history.length > 0) {
+            } else if (histLog.length > 0) {
               // シートが空でも端末の履歴は消さない。逆にシートへ送って同期
-              history.forEach(function (e) {
+              histLog.forEach(function (e) {
                 if (e && e.id != null) {
                   postSheet({ type: 'add', id: e.id, dir: e.dir, in: e.in, out: e.out, fee: e.fee, rate: e.rate });
                 }
@@ -512,10 +512,10 @@
   function saveHistory(dir, inVal, outVal) {
     if (isNaN(inVal) || inVal === 0) return;
     var entry = { id: Date.now(), dir: dir, in: inVal, out: outVal, fee: fee, rate: rate };
-    history.unshift(entry);
-    if (history.length > 100) history = history.slice(0, 100);
+    histLog.unshift(entry);
+    if (histLog.length > 100) histLog = histLog.slice(0, 100);
     renderHistory();                               // まず画面に出す（保存が失敗しても表示は出る）
-    lsSet('happi_history', JSON.stringify(history)); // 端末に保存（使えない環境でも落ちない）
+    lsSet('happi_history', JSON.stringify(histLog)); // 端末に保存（使えない環境でも落ちない）
     toast('履歴に保存しました');
     // スプレッドシート連携は裏で静かに試す（失敗しても端末には保存済みなので騒がない）
     if (webhook) {
@@ -535,13 +535,13 @@
   function renderHistory() {
     var list = document.getElementById('hist-list');
     var clearAll = document.getElementById('clear-all');
-    if (history.length === 0) {
+    if (histLog.length === 0) {
       list.innerHTML = '<div class="empty">履歴はまだありません</div>';
       clearAll.style.display = 'none';
       return;
     }
     clearAll.style.display = 'block';
-    list.innerHTML = history.map(function (e, i) {
+    list.innerHTML = histLog.map(function (e, i) {
       var tag = '手数料' + fmtNum(e.fee) + '% ／ ' + fmtNum(e.rate) + 'ハピ/円';
       return '<div class="hist-item" data-index="' + i + '">' +
         '<div class="hist-eq">' + histEqHtml(e) + '</div>' +
@@ -596,9 +596,9 @@
   }
 
   function deleteHistory(i) {
-    var removed = history[i];
-    history.splice(i, 1);
-    lsSet('happi_history', JSON.stringify(history));
+    var removed = histLog[i];
+    histLog.splice(i, 1);
+    lsSet('happi_history', JSON.stringify(histLog));
     renderHistory();
     if (webhook && removed && removed.id) {
       postSheet({ type: 'delete', id: removed.id }).catch(function () {});
@@ -606,7 +606,7 @@
   }
 
   function loadHistory(i) {
-    var e = history[i];
+    var e = histLog[i];
     if (e.dir === 'h') {
       amount.value = e.in; calc1(); lastKey.h = 'h:' + e.in + ':' + fee + ':' + rate;
       amount.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -619,8 +619,8 @@
   document.getElementById('clear-all').addEventListener('click', function () {
     var msg = webhook ? 'スプレッドシートの履歴もすべて消しますか？' : '履歴をすべて消しますか？';
     if (!confirm(msg)) return;
-    history = [];
-    lsSet('happi_history', JSON.stringify(history));
+    histLog = [];
+    lsSet('happi_history', JSON.stringify(histLog));
     renderHistory();
     if (webhook) { postSheet({ type: 'clear' }).catch(function () {}); }
   });
