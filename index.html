@@ -306,7 +306,7 @@
     <div id="hist-list"><div class="empty">履歴はまだありません</div></div>
     <button class="clear-all" id="clear-all">🗑 履歴をすべて消す</button>
     <div class="sync-note" id="sync-note"></div>
-    <div class="ver">ver. 11（履歴バグ修正）</div>
+    <div class="ver">ver. 12（確定で履歴）</div>
   </div>
 </div>
 
@@ -468,9 +468,19 @@
     saveHistory(dir, v, outVal);
   }
 
-  // 入力中はリアルタイム計算のみ（履歴には残さない＝コピー時だけ保存）
+  // 入力中はリアルタイム計算のみ
   amount.addEventListener('input', calc1);
   happi.addEventListener('input', calc2);
+
+  // 入力を確定したら履歴に保存：PCはEnter、iPhoneはキーボードの✓（完了→change）
+  amount.addEventListener('change', function () { autoSave('h'); });
+  happi.addEventListener('change', function () { autoSave('y'); });
+  amount.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.keyCode === 13) { autoSave('h'); amount.blur(); }
+  });
+  happi.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.keyCode === 13) { autoSave('y'); happi.blur(); }
+  });
 
   document.getElementById('clear1').addEventListener('click', function () {
     amount.value = ''; calc1(); lastKey.h = null; amount.focus();
