@@ -116,6 +116,18 @@
   .eq .u.clo { color: inherit; }
   .eq .eqsign { font-size: 26px; color: #fff; margin: 0 8px; font-weight: 800; text-shadow: 0 1px 2px rgba(120,80,160,.4); }
 
+  /* 一発計算カードの2つの結果（マルシェ＝ピンク / RMT＝紫）*/
+  .res-label { font-size: 11px; font-weight: 800; margin-bottom: 3px; }
+  .eq.res-hapi .res-label { color: #e06aa6; }
+  .eq.res-rmt  .res-label { color: #9b6fe0; }
+  .card.toHapi .eq.res-rmt { background: linear-gradient(135deg, #e8dbfb, #f7dcf3); }
+  .card.toHapi .eq.res-rmt .num.big { color: #9b6fe0;
+    text-shadow: 0 2px 0 #cdb0f2, 0 3px 0 #cdb0f2, 0 4px 0 #bd9bee, 0 5px 0 #bd9bee, 0 7px 8px rgba(120,80,170,.35); }
+  .card.toHapi .eq.res-rmt .num.sub { color: #c79be8; text-shadow: 0 2px 0 #e6d4fb, 0 3px 0 #e6d4fb; }
+  .copy-btn.rmt { background: linear-gradient(#b89bef, #9b6fe0); box-shadow: 0 4px 0 #7d50c8; }
+  .copy-btn.rmt:active { transform: translateY(2px); box-shadow: 0 2px 0 #7d50c8; }
+  .clear-wide { max-width: 100% !important; margin-top: 8px; }
+
   .btn-row { display: flex; gap: 8px; margin-top: 10px; }
   .btn-row button {
     flex: 1; padding: 10px; font-size: 14px; border-radius: 13px; border: 2.5px solid #fff;
@@ -266,27 +278,42 @@
   </header>
 
   <div class="body">
-    <!-- 金額 → ハピ -->
+    <!-- 手取り → ハピ＆RMT を一発計算 -->
     <div class="card toHapi">
       <span class="spark" style="top:10px;right:16px;">✨</span>
-      <span class="spark" style="bottom:54px;left:12px;font-size:12px;">✨</span>
-      <span class="tag">金額からハピを計算</span>
-      <label class="field-label" for="amount">希望金額（円）</label>
+      <span class="tag">手取りから一発計算</span>
+      <label class="field-label" for="amount">手取りでほしい金額（円）</label>
       <div class="inputbox">
         <input class="amt" id="amount" type="number" inputmode="numeric" placeholder="0" autocomplete="off">
         <span class="unit">円</span>
       </div>
-      <div class="eq">
+
+      <!-- マルシェ（ハピ） -->
+      <div class="eq res-hapi">
+        <div class="res-label">マルシェ（ハピ）で売るなら</div>
         <div class="line">
           <span class="num big" id="out">0</span><span class="u clo"><svg class="clover"><use href="#clover"/></svg></span><span class="u">ハピ</span>
           <span class="eqsign">＝</span>
-          <span class="num sub" id="echo1">0</span><span class="u">円</span>
+          <span class="u">手取り</span><span class="num sub" id="echo1">0</span><span class="u">円</span>
         </div>
       </div>
+
+      <!-- RMT（現金） -->
+      <div class="eq res-rmt">
+        <div class="res-label">RMT（現金）で売るなら</div>
+        <div class="line">
+          <span class="num big" id="setOut">0</span><span class="u">円に設定</span>
+          <span class="eqsign">＝</span>
+          <span class="u">手取り</span><span class="num sub" id="netEcho">0</span><span class="u">円</span>
+        </div>
+        <div class="fee-note" id="fee-note"></div>
+      </div>
+
       <div class="btn-row">
         <button class="copy-btn" id="copy1">📋 ハピをコピー</button>
-        <button class="clear-btn" id="clear1">クリア</button>
+        <button class="copy-btn rmt" id="copy3">📋 円をコピー</button>
       </div>
+      <button class="clear-btn clear-wide" id="clear1">クリア</button>
     </div>
 
     <!-- ハピ → 金額 -->
@@ -312,29 +339,6 @@
       </div>
     </div>
 
-    <!-- 手取り → 設定価格（販売手数料） -->
-    <div class="card toSet">
-      <span class="spark" style="top:10px;right:16px;">✨</span>
-      <span class="spark" style="bottom:54px;left:12px;font-size:12px;">✨</span>
-      <span class="tag">手取りから設定価格を計算</span>
-      <label class="field-label" for="net">手取りでほしい金額（円）</label>
-      <div class="inputbox">
-        <input class="amt" id="net" type="number" inputmode="numeric" placeholder="0" autocomplete="off">
-        <span class="unit">円</span>
-      </div>
-      <div class="eq">
-        <div class="line">
-          <span class="num big" id="setOut">0</span><span class="u">円に設定</span>
-          <span class="eqsign">＝</span>
-          <span class="u">手取り</span><span class="num sub" id="netEcho">0</span><span class="u">円</span>
-        </div>
-      </div>
-      <div class="fee-note" id="fee-note"></div>
-      <div class="btn-row">
-        <button class="copy-btn" id="copy3">📋 設定価格をコピー</button>
-        <button class="clear-btn" id="clear3">クリア</button>
-      </div>
-    </div>
   </div>
 
   <!-- 履歴 -->
@@ -343,7 +347,7 @@
     <div id="hist-list"><div class="empty">履歴はまだありません</div></div>
     <button class="clear-all" id="clear-all">🗑 履歴をすべて消す</button>
     <div class="sync-note" id="sync-note"></div>
-    <div class="ver">ver. 14（手数料名称変更）</div>
+    <div class="ver">ver. 15（一発計算）</div>
   </div>
 </div>
 
@@ -486,7 +490,6 @@
   var out2 = document.getElementById('out2');
   var echo1 = document.getElementById('echo1');
   var echo2 = document.getElementById('echo2');
-  var net = document.getElementById('net');
   var setOut = document.getElementById('setOut');
   var netEcho = document.getElementById('netEcho');
   var feeNote = document.getElementById('fee-note');
@@ -503,10 +506,10 @@
     echo2.textContent = fmt(v);
     out2.textContent = fmt(v * divisor() / rate);
   }
-  // 手取り→設定価格：設定価格 = 手取り ÷ (1 − 販売手数料%)
-  function setPriceOf(net) { return net / (1 - saleFee / 100); }
+  // 手取り→設定価格：設定価格 = 手取り ÷ (1 − RMT手数料%)
+  function setPriceOf(netYen) { return netYen / (1 - saleFee / 100); }
   function calc3() {
-    var v = parseFloat(net.value);
+    var v = parseFloat(amount.value);   // 一発計算：上の入力(手取り)を共用
     if (isNaN(v)) {
       setOut.textContent = '0'; netEcho.textContent = '0';
       feeNote.textContent = 'RMT手数料 ' + fmtNum(saleFee) + '%';
@@ -523,7 +526,7 @@
   var timer1 = null, timer2 = null;
   var lastKey = { h: null, y: null, f: null };
 
-  function elOf(dir) { return dir === 'h' ? amount : (dir === 'y' ? happi : net); }
+  function elOf(dir) { return dir === 'y' ? happi : amount; }   // h と f は同じ入力(amount)を共用
   function outOf(dir, v) {
     if (dir === 'h') return v / divisor() * rate;
     if (dir === 'y') return v * divisor() / rate;
@@ -539,32 +542,25 @@
     saveHistory(dir, v, outOf(dir, v));
   }
 
-  // 入力中はリアルタイム計算のみ
-  amount.addEventListener('input', calc1);
+  // 入力中はリアルタイム計算のみ（上の入力はハピとRMTの両方を更新）
+  amount.addEventListener('input', function () { calc1(); calc3(); });
   happi.addEventListener('input', calc2);
-  net.addEventListener('input', calc3);
 
   // 入力を確定したら履歴に保存：PCはEnter、iPhoneはキーボードの✓（完了→change）
-  amount.addEventListener('change', function () { autoSave('h'); });
+  amount.addEventListener('change', function () { autoSave('h'); autoSave('f'); });
   happi.addEventListener('change', function () { autoSave('y'); });
-  net.addEventListener('change', function () { autoSave('f'); });
-  function enterToSave(el, dir) {
-    el.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' || e.keyCode === 13) { autoSave(dir); el.blur(); }
-    });
-  }
-  enterToSave(amount, 'h');
-  enterToSave(happi, 'y');
-  enterToSave(net, 'f');
+  amount.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.keyCode === 13) { autoSave('h'); autoSave('f'); amount.blur(); }
+  });
+  happi.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.keyCode === 13) { autoSave('y'); happi.blur(); }
+  });
 
   document.getElementById('clear1').addEventListener('click', function () {
-    amount.value = ''; calc1(); lastKey.h = null; amount.focus();
+    amount.value = ''; calc1(); calc3(); lastKey.h = null; lastKey.f = null; amount.focus();
   });
   document.getElementById('clear2').addEventListener('click', function () {
     happi.value = ''; calc2(); lastKey.y = null; happi.focus();
-  });
-  document.getElementById('clear3').addEventListener('click', function () {
-    net.value = ''; calc3(); lastKey.f = null; net.focus();
   });
 
   // ===== コピー（押したら即履歴に保存）=====
@@ -713,16 +709,13 @@
 
   function loadHistory(i) {
     var e = histLog[i];
-    var tail = ':' + fee + ':' + rate + ':' + saleFee;
-    if (e.dir === 'h') {
-      amount.value = e.in; calc1(); lastKey.h = 'h:' + e.in + tail;
-      amount.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } else if (e.dir === 'y') {
-      happi.value = e.in; calc2(); lastKey.y = 'y:' + e.in + tail;
+    if (e.dir === 'y') {
+      happi.value = e.in; calc2();
       happi.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else {
-      net.value = e.in; calc3(); lastKey.f = 'f:' + e.in + tail;
-      net.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // h（ハピ）も f（RMT）も上の手取り入力に戻す
+      amount.value = e.in; calc1(); calc3();
+      amount.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }
 
