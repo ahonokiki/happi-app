@@ -343,7 +343,7 @@
     <div id="hist-list"><div class="empty">履歴はまだありません</div></div>
     <button class="clear-all" id="clear-all">🗑 履歴をすべて消す</button>
     <div class="sync-note" id="sync-note"></div>
-    <div class="ver">ver. 13（手取り計算＋日時）</div>
+    <div class="ver">ver. 14（手数料名称変更）</div>
   </div>
 </div>
 
@@ -353,7 +353,7 @@
     <h2>⚙ 計算の設定</h2>
     <p class="hint">手数料やハピのレートが変わったらここで直してください。</p>
 
-    <label for="set-fee">手数料（％）</label>
+    <label for="set-fee">マルシェ手数料（％）</label>
     <div class="field">
       <input id="set-fee" type="number" inputmode="decimal" step="0.1">
       <span class="u">％</span>
@@ -370,7 +370,7 @@
 
     <hr>
 
-    <label for="set-salefee">販売手数料（％）<span style="font-weight:400;color:#b39ccb">／ 手取り→設定価格カード用</span></label>
+    <label for="set-salefee">RMT手数料（％）<span style="font-weight:400;color:#b39ccb">／ 手取り→設定価格カード用</span></label>
     <div class="field">
       <input id="set-salefee" type="number" inputmode="decimal" step="0.1">
       <span class="u">％</span>
@@ -386,7 +386,7 @@
       <button class="cancel" id="set-cancel">キャンセル</button>
       <button class="save" id="set-save">保存</button>
     </div>
-    <span class="reset-link" id="set-reset">計算を初期値に戻す（手数料30％・レート12.5）</span>
+    <span class="reset-link" id="set-reset">計算を初期値に戻す（マルシェ30％・レート12.5・RMT8.8％）</span>
   </div>
 </div>
 
@@ -509,13 +509,13 @@
     var v = parseFloat(net.value);
     if (isNaN(v)) {
       setOut.textContent = '0'; netEcho.textContent = '0';
-      feeNote.textContent = '販売手数料 ' + fmtNum(saleFee) + '%';
+      feeNote.textContent = 'RMT手数料 ' + fmtNum(saleFee) + '%';
       return;
     }
     var price = setPriceOf(v);
     setOut.textContent = fmt(price);
     netEcho.textContent = fmt(v);
-    feeNote.textContent = '販売手数料 ' + fmtNum(saleFee) + '%（差し引き ' + fmt(price - v) + '円）';
+    feeNote.textContent = 'RMT手数料 ' + fmtNum(saleFee) + '%（差し引き ' + fmt(price - v) + '円）';
   }
   function recalc() { calc1(); calc2(); calc3(); }
 
@@ -644,8 +644,8 @@
     clearAll.style.display = 'block';
     list.innerHTML = histLog.map(function (e, i) {
       var tag = e.dir === 'f'
-        ? '販売手数料' + fmtNum(e.fee) + '%'
-        : '手数料' + fmtNum(e.fee) + '% ／ ' + fmtNum(e.rate) + 'ハピ/円';
+        ? 'RMT手数料' + fmtNum(e.fee) + '%'
+        : 'マルシェ手数料' + fmtNum(e.fee) + '% ／ ' + fmtNum(e.rate) + 'ハピ/円';
       return '<div class="hist-item" data-index="' + i + '">' +
         '<div class="hist-left">' +
           '<div class="hist-eq">' + histEqHtml(e) + '</div>' +
@@ -767,7 +767,7 @@
     var r = parseFloat(setRate.value);
     var sf = parseFloat(setSaleFee.value);
     if (isNaN(f) || isNaN(r) || r === 0 || f >= 100 || isNaN(sf) || sf >= 100) {
-      alert('手数料・販売手数料は0〜99％、レートは0より大きい数を入れてください。');
+      alert('マルシェ手数料・RMT手数料は0〜99％、レートは0より大きい数を入れてください。');
       return;
     }
     var feeOrRateChanged = (f !== fee || r !== rate);
