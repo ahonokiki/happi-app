@@ -35,67 +35,67 @@
     display: flex;
     justify-content: center;
   }
-  .wrap { width: 100%; max-width: 440px; padding: 0 0 70px; }
+  .wrap { width: 100%; max-width: 440px; padding: 0 0 24px; }
 
   .clover { width: 1em; height: 1em; vertical-align: -0.15em; filter: drop-shadow(0 1px 1px rgba(150,110,190,.3)); }
 
   /* ヘッダー */
   header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 18px 18px 10px;
+    padding: 8px 16px 4px;
   }
   header h1 {
-    font-size: 23px; margin: 0; color: #fff; letter-spacing: .03em; font-weight: 800;
+    font-size: 19px; margin: 0; color: #fff; letter-spacing: .03em; font-weight: 800;
     display: flex; align-items: center; gap: 6px;
     -webkit-text-stroke: 4px #fff; paint-order: stroke fill;
     text-shadow: 0 2px 0 #ffb6d6, 0 3px 0 #ffb6d6, 0 4px 0 #ffa3cb, 0 6px 7px rgba(160,110,200,.35);
   }
   header h1 .txt { color: #ff79b3; }
   .gear {
-    width: 44px; height: 44px; border-radius: 50%; border: 3px solid #fff;
-    background: #fff; color: #b884e0; font-size: 21px; cursor: pointer;
+    width: 38px; height: 38px; border-radius: 50%; border: 3px solid #fff;
+    background: #fff; color: #b884e0; font-size: 19px; cursor: pointer;
     box-shadow: 0 4px 0 #e6d3f7, 0 6px 10px rgba(160,110,200,.2);
   }
   .gear:active { transform: translateY(2px); box-shadow: 0 2px 0 #e6d3f7; }
 
-  .body { padding: 8px 16px 0; }
+  .body { padding: 4px 14px 0; }
 
   /* カード */
   .card {
-    position: relative; border-radius: 28px; padding: 18px 18px 20px;
-    margin-bottom: 18px; border: 3px solid #fff;
-    box-shadow: 0 10px 24px rgba(190,140,220,.28);
+    position: relative; border-radius: 20px; padding: 12px 14px 13px;
+    margin-bottom: 11px; border: 3px solid #fff;
+    box-shadow: 0 6px 16px rgba(190,140,220,.24);
   }
   .card.toHapi { background: linear-gradient(160deg, #eafaff 0%, #f3ecff 100%); }
   .card.toYen  { background: linear-gradient(160deg, #eafff4 0%, #eef9ff 100%); }
   .card .spark { position: absolute; pointer-events: none; font-size: 15px; opacity: .85; }
 
   .card .tag {
-    display: inline-block; font-size: 13px; font-weight: 800; color: #fff;
-    padding: 6px 18px; border-radius: 999px; margin-bottom: 14px;
+    display: inline-block; font-size: 12px; font-weight: 800; color: #fff;
+    padding: 4px 14px; border-radius: 999px; margin-bottom: 9px;
     -webkit-text-stroke: 0; text-shadow: 0 1px 2px rgba(120,80,160,.35);
     box-shadow: 0 3px 0 rgba(150,110,190,.18), inset 0 1.5px 0 rgba(255,255,255,.55);
   }
   .card.toHapi .tag { background: linear-gradient(120deg, #b89bef, var(--sky)); }
   .card.toYen  .tag { background: linear-gradient(120deg, var(--mint), #8fe0c4); }
 
-  label.field-label { display: block; font-size: 13px; font-weight: 800; color: #b39ccb; margin-bottom: 6px; }
+  label.field-label { display: block; font-size: 12px; font-weight: 800; color: #b39ccb; margin-bottom: 4px; }
   .inputbox {
     display: flex; align-items: center; background: #fff;
-    border: 3px solid #ecdcfb; border-radius: 18px; padding: 2px 16px;
+    border: 3px solid #ecdcfb; border-radius: 14px; padding: 0 14px;
   }
   .inputbox:focus-within { border-color: var(--lav); }
   input.amt {
-    flex: 1; border: none; outline: none; font-size: 30px; font-weight: 800;
-    padding: 12px 4px; width: 100%; text-align: right; background: transparent;
+    flex: 1; border: none; outline: none; font-size: 25px; font-weight: 800;
+    padding: 9px 4px; width: 100%; text-align: right; background: transparent;
     color: #6b5b80;
   }
   .inputbox .unit { font-size: 16px; color: #b39ccb; padding-left: 6px; font-weight: 800; }
 
   /* 結果：○○ハピ ＝ □□円（白フチ極太数字）*/
   .eq {
-    margin-top: 16px; border-radius: 20px; padding: 18px 12px;
-    text-align: center; line-height: 1.3; border: 2.5px solid #fff;
+    margin-top: 10px; border-radius: 14px; padding: 11px 10px;
+    text-align: center; line-height: 1.2; border: 2.5px solid #fff;
   }
   .card.toHapi .eq { background: linear-gradient(135deg, #bfe7fb, #e6d8fb); }
   .card.toYen  .eq { background: linear-gradient(135deg, #c6f3dd, #dff6ff); }
@@ -103,8 +103,8 @@
   .eq .num {
     font-weight: 800; -webkit-text-stroke: 5px #fff; paint-order: stroke fill;
   }
-  .eq .num.big { font-size: 40px; }
-  .eq .num.sub { font-size: 26px; }
+  .eq .num.big { font-size: 30px; }
+  .eq .num.sub { font-size: 21px; }
   .card.toHapi .eq .num.big { color: var(--pink-deep);
     text-shadow: 0 2px 0 #ffaed4, 0 3px 0 #ffaed4, 0 4px 0 #ff9ac8, 0 5px 0 #ff9ac8, 0 7px 8px rgba(150,80,160,.35); }
   .card.toHapi .eq .num.sub { color: #7fb8ee; text-shadow: 0 2px 0 #c5dcff, 0 3px 0 #c5dcff; }
@@ -116,9 +116,9 @@
   .eq .u.clo { color: inherit; }
   .eq .eqsign { font-size: 26px; color: #fff; margin: 0 8px; font-weight: 800; text-shadow: 0 1px 2px rgba(120,80,160,.4); }
 
-  .btn-row { display: flex; gap: 10px; margin-top: 16px; }
+  .btn-row { display: flex; gap: 8px; margin-top: 10px; }
   .btn-row button {
-    flex: 1; padding: 13px; font-size: 15px; border-radius: 16px; border: 2.5px solid #fff;
+    flex: 1; padding: 10px; font-size: 14px; border-radius: 13px; border: 2.5px solid #fff;
     cursor: pointer; font-family: inherit; font-weight: 800;
   }
   .copy-btn { color: #fff; }
@@ -132,16 +132,16 @@
   .clear-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #ecdcfb; }
 
   /* 履歴 */
-  .history { padding: 16px 16px 0; }
+  .history { padding: 6px 14px 0; }
   .history h2 {
-    font-size: 18px; color: #fff; margin: 0 0 12px; font-weight: 800;
+    font-size: 16px; color: #fff; margin: 0 0 8px; font-weight: 800;
     display: flex; align-items: center; gap: 6px;
     -webkit-text-stroke: 3px #fff; paint-order: stroke fill;
     text-shadow: 0 2px 0 #cdb0f2, 0 3px 0 #cdb0f2, 0 4px 0 #bd9bee, 0 6px 6px rgba(160,110,200,.3);
   }
   .history h2 .txt { color: #b07fe0; }
   .hist-item {
-    background: #fff; border-radius: 20px; padding: 14px 16px; margin-bottom: 10px;
+    background: #fff; border-radius: 16px; padding: 10px 14px; margin-bottom: 8px;
     display: flex; align-items: center; justify-content: space-between;
     box-shadow: 0 5px 12px rgba(190,140,220,.18); cursor: pointer; user-select: none;
     border: 2.5px solid #fff; transition: transform .15s, box-shadow .15s;
@@ -160,7 +160,7 @@
   .hist-item.show-delete .hist-tag { display: none; }
   .hist-item.show-delete .del-btn { display: inline-block; }
   .empty {
-    color: #fff; font-size: 14px; text-align: center; padding: 18px 0; font-weight: 700;
+    color: #fff; font-size: 13px; text-align: center; padding: 10px 0; font-weight: 700;
     text-shadow: 0 1px 3px rgba(160,110,200,.3);
   }
   .clear-all {
@@ -306,7 +306,7 @@
     <div id="hist-list"><div class="empty">履歴はまだありません</div></div>
     <button class="clear-all" id="clear-all">🗑 履歴をすべて消す</button>
     <div class="sync-note" id="sync-note"></div>
-    <div class="ver">ver. 8（端末に保存）</div>
+    <div class="ver">ver. 9（コンパクト表示）</div>
   </div>
 </div>
 
