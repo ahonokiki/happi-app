@@ -345,7 +345,7 @@
     <div id="hist-list"><div class="empty">履歴はまだありません</div></div>
     <button class="clear-all" id="clear-all">🗑 履歴をすべて消す</button>
     <div class="sync-note" id="sync-note"></div>
-    <div class="ver">ver. 22（同期表示を非表示）</div>
+    <div class="ver">ver. 23</div>
   </div>
 </div>
 
@@ -789,7 +789,7 @@
   }
 
   document.getElementById('clear-all').addEventListener('click', function () {
-    if (!confirm('アプリの履歴を消しますか？（スプレッドシートには記録が残ります）')) return;
+    if (!confirm('履歴を消しますか？')) return;
     var maxId = 0;
     histLog.forEach(function (e) { if (e && e.id > maxId) maxId = e.id; });
     clearedBefore = Math.max(Date.now(), maxId + 1);   // これ以前はアプリ非表示
