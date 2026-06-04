@@ -347,7 +347,7 @@
     <div id="hist-list"><div class="empty">履歴はまだありません</div></div>
     <button class="clear-all" id="clear-all">🗑 履歴をすべて消す</button>
     <div class="sync-note" id="sync-note"></div>
-    <div class="ver">ver. 17（RMTもハピ表記）</div>
+    <div class="ver">ver. 18（RMTハピ ÷0.7換算）</div>
   </div>
 </div>
 
@@ -521,7 +521,7 @@
     }
     var price = setPriceOf(v);          // RMT設定額（円）
     setOut.textContent = fmt(price);
-    rmtHapi.textContent = fmt(price * rate);   // 設定額をハピ換算（円 × レート）
+    rmtHapi.textContent = fmt(Math.round(price) / divisor() * rate);   // 設定額 ÷0.7 × レート でハピ換算
     feeNote.textContent = 'RMT手数料 ' + fmtNum(saleFee) + '%（差し引き ' + fmt(price - v) + '円）';
   }
   function recalc() { calc1(); calc2(); calc3(); }
