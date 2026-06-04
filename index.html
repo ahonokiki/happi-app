@@ -6,14 +6,14 @@
 <title>ハピ価格計算</title>
 <style>
   :root {
-    --pink: #ff7fb6;
-    --pink-deep: #ff5ba0;
+    --pink: #ff8ec8;
+    --pink-deep: #ff5fa6;
     --mint: #63d6a6;
-    --mint-deep: #2bb583;
-    --lav: #c4a3ef;
-    --sky: #8fd4f0;
+    --mint-deep: #28b27f;
+    --lav: #b89bef;
+    --sky: #86d3f2;
     --ink: #7a6a90;
-    --yellow: #ffcf5a;
+    --yellow: #ffd45e;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body {
@@ -22,10 +22,11 @@
                  -apple-system, "メイリオ", sans-serif;
     color: var(--ink);
     background:
-      radial-gradient(circle at 12% 8%, rgba(255,255,255,.55) 0 2px, transparent 3px),
-      radial-gradient(circle at 82% 22%, rgba(255,255,255,.5) 0 2px, transparent 3px),
-      radial-gradient(circle at 68% 6%, rgba(255,255,255,.45) 0 1.5px, transparent 2.5px),
-      linear-gradient(170deg, #d7c0f3 0%, #f4d2e7 42%, #cfeede 78%, #d3eaf7 100%);
+      radial-gradient(ellipse 130px 60px at 18% 9%, rgba(255,255,255,.75), transparent 72%),
+      radial-gradient(ellipse 150px 66px at 80% 6%, rgba(255,255,255,.65), transparent 72%),
+      radial-gradient(ellipse 90px 44px at 55% 14%, rgba(255,255,255,.55), transparent 72%),
+      radial-gradient(circle at 50% -5%, #b8e4fb 0%, transparent 42%),
+      linear-gradient(176deg, #c9e7fb 0%, #e4d7f6 36%, #f7d6e9 64%, #d2f0e1 100%);
     background-attachment: fixed;
     min-height: 100vh;
     display: flex;
@@ -41,10 +42,10 @@
     padding: 18px 18px 10px;
   }
   header h1 {
-    font-size: 22px; margin: 0; color: #fff; letter-spacing: .03em; font-weight: 800;
+    font-size: 23px; margin: 0; color: #fff; letter-spacing: .03em; font-weight: 800;
     display: flex; align-items: center; gap: 6px;
     -webkit-text-stroke: 4px #fff; paint-order: stroke fill;
-    text-shadow: 0 2px 0 #ffb6d6, 0 4px 7px rgba(160,110,200,.35);
+    text-shadow: 0 2px 0 #ffb6d6, 0 3px 0 #ffb6d6, 0 4px 0 #ffa3cb, 0 6px 7px rgba(160,110,200,.35);
   }
   header h1 .txt { color: #ff79b3; }
   .gear {
@@ -70,7 +71,7 @@
     display: inline-block; font-size: 13px; font-weight: 800; color: #fff;
     padding: 6px 18px; border-radius: 999px; margin-bottom: 14px;
     -webkit-text-stroke: 0; text-shadow: 0 1px 2px rgba(120,80,160,.35);
-    box-shadow: 0 3px 0 rgba(150,110,190,.18);
+    box-shadow: 0 3px 0 rgba(150,110,190,.18), inset 0 1.5px 0 rgba(255,255,255,.55);
   }
   .card.toHapi .tag { background: linear-gradient(120deg, #b89bef, var(--sky)); }
   .card.toYen  .tag { background: linear-gradient(120deg, var(--mint), #8fe0c4); }
@@ -101,10 +102,12 @@
   }
   .eq .num.big { font-size: 40px; }
   .eq .num.sub { font-size: 26px; }
-  .card.toHapi .eq .num.big { color: var(--pink-deep); text-shadow: 0 3px 0 #ffaed1, 0 6px 8px rgba(150,100,180,.3); }
-  .card.toHapi .eq .num.sub { color: #8fb4e8; text-shadow: 0 2px 0 #c5dcff; }
-  .card.toYen  .eq .num.big { color: var(--mint-deep); text-shadow: 0 3px 0 #8fe2bf, 0 6px 8px rgba(120,160,140,.3); }
-  .card.toYen  .eq .num.sub { color: #f0a94e; text-shadow: 0 2px 0 #ffd99a; }
+  .card.toHapi .eq .num.big { color: var(--pink-deep);
+    text-shadow: 0 2px 0 #ffaed4, 0 3px 0 #ffaed4, 0 4px 0 #ff9ac8, 0 5px 0 #ff9ac8, 0 7px 8px rgba(150,80,160,.35); }
+  .card.toHapi .eq .num.sub { color: #7fb8ee; text-shadow: 0 2px 0 #c5dcff, 0 3px 0 #c5dcff; }
+  .card.toYen  .eq .num.big { color: var(--mint-deep);
+    text-shadow: 0 2px 0 #8fe2bf, 0 3px 0 #8fe2bf, 0 4px 0 #79dcb0, 0 5px 0 #79dcb0, 0 7px 8px rgba(80,150,120,.35); }
+  .card.toYen  .eq .num.sub { color: #f0a94e; text-shadow: 0 2px 0 #ffd99a, 0 3px 0 #ffd99a; }
   .eq .u { font-size: 15px; font-weight: 800; color: #fff; margin: 0 1px 0 3px;
            -webkit-text-stroke: 0; text-shadow: 0 1px 2px rgba(120,80,160,.45); }
   .eq .u.clo { color: inherit; }
@@ -131,7 +134,7 @@
     font-size: 18px; color: #fff; margin: 0 0 12px; font-weight: 800;
     display: flex; align-items: center; gap: 6px;
     -webkit-text-stroke: 3px #fff; paint-order: stroke fill;
-    text-shadow: 0 2px 0 #c7a6ef, 0 4px 6px rgba(160,110,200,.3);
+    text-shadow: 0 2px 0 #cdb0f2, 0 3px 0 #cdb0f2, 0 4px 0 #bd9bee, 0 6px 6px rgba(160,110,200,.3);
   }
   .history h2 .txt { color: #b07fe0; }
   .hist-item {
@@ -227,11 +230,15 @@
 <!-- 四つ葉アイコン（ハピコイン）-->
 <svg width="0" height="0" style="position:absolute">
   <symbol id="clover" viewBox="0 0 32 32">
-    <circle cx="16" cy="9"  r="6.6" fill="#ff9ecb"/>
-    <circle cx="23" cy="16" r="6.6" fill="#8fd4f0"/>
-    <circle cx="16" cy="23" r="6.6" fill="#97e0a8"/>
-    <circle cx="9"  cy="16" r="6.6" fill="#ffe08a"/>
-    <circle cx="16" cy="16" r="3.4" fill="#fff"/>
+    <circle cx="16" cy="9"  r="6.8" fill="#ff8ec8"/>
+    <circle cx="23" cy="16" r="6.8" fill="#7fd1f0"/>
+    <circle cx="16" cy="23" r="6.8" fill="#84dca0"/>
+    <circle cx="9"  cy="16" r="6.8" fill="#ffd96b"/>
+    <ellipse cx="13.5" cy="6.8" rx="2.1" ry="1.3" fill="#fff" opacity=".6"/>
+    <ellipse cx="20.8" cy="13.8" rx="2.1" ry="1.3" fill="#fff" opacity=".55"/>
+    <ellipse cx="13.5" cy="20.8" rx="2.1" ry="1.3" fill="#fff" opacity=".5"/>
+    <ellipse cx="6.6" cy="13.8" rx="2.1" ry="1.3" fill="#fff" opacity=".55"/>
+    <circle cx="16" cy="16" r="3.1" fill="#fff"/>
   </symbol>
 </svg>
 
@@ -377,9 +384,19 @@
       .then(function (data) {
         if (data && data.ok) {
           if (Array.isArray(data.items)) {
-            history = data.items;
-            localStorage.setItem('happi_history', JSON.stringify(history));
-            renderHistory();
+            if (data.items.length > 0) {
+              // シートにデータあり → それを正とする
+              history = data.items;
+              localStorage.setItem('happi_history', JSON.stringify(history));
+              renderHistory();
+            } else if (history.length > 0) {
+              // シートが空でも端末の履歴は消さない。逆にシートへ送って同期
+              history.forEach(function (e) {
+                if (e && e.id != null) {
+                  postSheet({ type: 'add', id: e.id, dir: e.dir, in: e.in, out: e.out, fee: e.fee, rate: e.rate });
+                }
+              });
+            }
           }
           // 設定も共有
           if (data.settings && data.settings.fee != null && data.settings.rate != null) {
