@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ハピ価格計算</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Hiragino Kaku Gothic ProN", "メイリオ", sans-serif;
+    background: #f3f4f6;
+    color: #1f2937;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 420px;
+    padding: 24px 18px 60px;
+  }
+  h1 {
+    font-size: 20px;
+    text-align: center;
+    margin: 18px 0 6px;
+  }
+  .formula {
+    text-align: center;
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 24px;
+  }
+  label {
+    display: block;
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  .inputbox {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border: 2px solid #d1d5db;
+    border-radius: 12px;
+    padding: 4px 14px;
+  }
+  .inputbox:focus-within { border-color: #2563eb; }
+  input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 28px;
+    padding: 14px 4px;
+    width: 100%;
+    text-align: right;
+    background: transparent;
+  }
+  .unit { font-size: 16px; color: #6b7280; padding-left: 6px; }
+
+  .result {
+    margin-top: 28px;
+    background: #2563eb;
+    color: #fff;
+    border-radius: 16px;
+    padding: 22px 18px;
+    text-align: center;
+  }
+  .result .cap { font-size: 14px; opacity: .85; }
+  .result .val {
+    font-size: 40px;
+    font-weight: bold;
+    margin: 6px 0 0;
+    word-break: break-all;
+  }
+  .result .val small { font-size: 18px; font-weight: normal; }
+
+  .clear {
+    display: block;
+    width: 100%;
+    margin-top: 18px;
+    padding: 14px;
+    font-size: 16px;
+    border: none;
+    border-radius: 12px;
+    background: #e5e7eb;
+    color: #374151;
+    cursor: pointer;
+  }
+  .clear:active { background: #d1d5db; }
+
+  .divider {
+    border: none;
+    border-top: 1px dashed #cbd5e1;
+    margin: 38px 0 24px;
+  }
+  .result.green { background: #059669; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>ハピ価格計算</h1>
+  <div class="formula">希望金額 ÷ 0.7 × 12.5 ＝ ハピ販売価格</div>
+
+  <label for="amount">希望金額（円）</label>
+  <div class="inputbox">
+    <input id="amount" type="number" inputmode="numeric" placeholder="0" autocomplete="off">
+    <span class="unit">円</span>
+  </div>
+
+  <div class="result">
+    <div class="cap">ハピ販売価格</div>
+    <div class="val"><span id="out">0</span><small> ハピ</small></div>
+  </div>
+
+  <button class="clear" id="clear">クリア</button>
+
+  <hr class="divider">
+
+  <div class="formula">ハピ販売価格 × 0.7 ÷ 12.5 ＝ 希望金額</div>
+
+  <label for="happi">ハピ販売価格</label>
+  <div class="inputbox">
+    <input id="happi" type="number" inputmode="numeric" placeholder="0" autocomplete="off">
+    <span class="unit">ハピ</span>
+  </div>
+
+  <div class="result green">
+    <div class="cap">希望金額</div>
+    <div class="val"><span id="out2">0</span><small> 円</small></div>
+  </div>
+
+  <button class="clear" id="clear2">クリア</button>
+</div>
+
+<script>
+  var input = document.getElementById('amount');
+  var out = document.getElementById('out');
+
+  function calc() {
+    var v = parseFloat(input.value);
+    if (isNaN(v)) { out.textContent = '0'; return; }
+    var result = v / 0.7 * 12.5;
+    // 小数点以下を四捨五入し、3桁区切りで表示
+    out.textContent = Math.round(result).toLocaleString('ja-JP');
+  }
+
+  input.addEventListener('input', calc);
+  document.getElementById('clear').addEventListener('click', function () {
+    input.value = '';
+    out.textContent = '0';
+    input.focus();
+  });
+
+  // ハピ販売価格 → 希望金額（逆算）
+  var happi = document.getElementById('happi');
+  var out2 = document.getElementById('out2');
+
+  function calc2() {
+    var v = parseFloat(happi.value);
+    if (isNaN(v)) { out2.textContent = '0'; return; }
+    var result = v * 0.7 / 12.5;
+    out2.textContent = Math.round(result).toLocaleString('ja-JP');
+  }
+
+  happi.addEventListener('input', calc2);
+  document.getElementById('clear2').addEventListener('click', function () {
+    happi.value = '';
+    out2.textContent = '0';
+    happi.focus();
+  });
+</script>
+</body>
+</html>
