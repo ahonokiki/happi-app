@@ -306,7 +306,7 @@
     <div id="hist-list"><div class="empty">履歴はまだありません</div></div>
     <button class="clear-all" id="clear-all">🗑 履歴をすべて消す</button>
     <div class="sync-note" id="sync-note"></div>
-    <div class="ver">ver. 9（コンパクト表示）</div>
+    <div class="ver">ver. 10（履歴バグ修正）</div>
   </div>
 </div>
 
@@ -356,8 +356,8 @@
   var DEFAULT_WEBHOOK = '';
 
   // iPhone Safari のプライベートモード等で localStorage が使えなくても落ちないようにする
-  function lsGet(k) { try { return lsGet(k); } catch (e) { return null; } }
-  function lsSet(k, v) { try { lsSet(k, v); } catch (e) {} }
+  function lsGet(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { window.localStorage.setItem(k, v); } catch (e) {} }
 
   var fee  = parseFloat(lsGet('happi_fee'))  || DEFAULT_FEE;
   var rate = parseFloat(lsGet('happi_rate')) || DEFAULT_RATE;
