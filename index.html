@@ -464,6 +464,9 @@
     calc2(); clearTimeout(timer2);
     timer2 = setTimeout(function () { autoSave('y'); }, SAVE_DELAY);
   });
+  // 入力欄から離れた（確定した）瞬間にも保存：3秒待たなくても残る
+  amount.addEventListener('change', function () { clearTimeout(timer1); autoSave('h'); });
+  happi.addEventListener('change', function () { clearTimeout(timer2); autoSave('y'); });
 
   document.getElementById('clear1').addEventListener('click', function () {
     amount.value = ''; calc1(); clearTimeout(timer1); lastKey.h = null; amount.focus();
@@ -510,12 +513,11 @@
     if (history.length > 100) history = history.slice(0, 100);
     localStorage.setItem('happi_history', JSON.stringify(history));
     renderHistory();
+    toast('履歴に保存しました');   // 端末に保存できた時点で必ず表示
+    // スプレッドシート連携は裏で静かに試す（失敗しても端末には保存済みなので騒がない）
     if (webhook) {
       postSheet({ type: 'add', id: entry.id, dir: dir, in: inVal, out: outVal, fee: fee, rate: rate })
-        .then(function (res) { toast(res && res.ok ? '✅ 履歴を保存しました' : '⚠ シート保存に失敗', !(res && res.ok)); })
-        .catch(function () { toast('⚠ シート保存に失敗（端末には保存済み）', true); });
-    } else {
-      toast('履歴に保存しました');
+        .catch(function () {});
     }
   }
 
@@ -596,7 +598,7 @@
     localStorage.setItem('happi_history', JSON.stringify(history));
     renderHistory();
     if (webhook && removed && removed.id) {
-      postSheet({ type: 'delete', id: removed.id }).catch(function () { toast('⚠ シート側の削除に失敗', true); });
+      postSheet({ type: 'delete', id: removed.id }).catch(function () {});
     }
   }
 
@@ -617,7 +619,7 @@
     history = [];
     localStorage.setItem('happi_history', JSON.stringify(history));
     renderHistory();
-    if (webhook) { postSheet({ type: 'clear' }).catch(function () { toast('⚠ シート側の全消しに失敗', true); }); }
+    if (webhook) { postSheet({ type: 'clear' }).catch(function () {}); }
   });
 
   // ===== 設定モーダル =====
