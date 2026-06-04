@@ -126,6 +126,17 @@
   .card.toYen  .copy-btn { background: linear-gradient(var(--mint), var(--mint-deep)); box-shadow: 0 4px 0 #1f9d72; }
   .card.toHapi .copy-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #e24f8e; }
   .card.toYen  .copy-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #1f9d72; }
+  /* 3枚目：手取り→設定価格（ラベンダー）*/
+  .card.toSet { background: linear-gradient(160deg, #f3ecff 0%, #fdeefb 100%); }
+  .card.toSet .tag { background: linear-gradient(120deg, #b89bef, #d99be0); }
+  .card.toSet .eq { background: linear-gradient(135deg, #e8dbfb, #f7dcf3); }
+  .card.toSet .eq .num.big { color: #9b6fe0;
+    text-shadow: 0 2px 0 #cdb0f2, 0 3px 0 #cdb0f2, 0 4px 0 #bd9bee, 0 5px 0 #bd9bee, 0 7px 8px rgba(120,80,170,.35); }
+  .card.toSet .eq .num.sub { color: #c79be8; text-shadow: 0 2px 0 #e6d4fb, 0 3px 0 #e6d4fb; }
+  .card.toSet .copy-btn { background: linear-gradient(#b89bef, #9b6fe0); box-shadow: 0 4px 0 #7d50c8; }
+  .card.toSet .copy-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #7d50c8; }
+  .fee-note { font-size: 12px; color: #b39ccb; text-align: center; margin-top: 8px; font-weight: 700; }
+
   .clear-btn {
     background: #fff; color: #b39ccb; box-shadow: 0 4px 0 #ecdcfb; max-width: 38%;
   }
@@ -147,6 +158,8 @@
     border: 2.5px solid #fff; transition: transform .15s, box-shadow .15s;
   }
   .hist-item.pressing { transform: scale(0.97); box-shadow: 0 0 0 3px var(--lav) inset; }
+  .hist-left { min-width: 0; }
+  .hist-date { font-size: 11px; color: #b6a6cf; margin-top: 3px; font-weight: 700; }
   .hist-eq { font-size: 16px; font-weight: 800; color: #8a78a8; }
   .hist-eq .p { color: var(--pink-deep); font-size: 18px; }
   .hist-eq .y { color: var(--mint-deep); font-size: 18px; }
@@ -298,6 +311,30 @@
         <button class="clear-btn" id="clear2">クリア</button>
       </div>
     </div>
+
+    <!-- 手取り → 設定価格（販売手数料） -->
+    <div class="card toSet">
+      <span class="spark" style="top:10px;right:16px;">✨</span>
+      <span class="spark" style="bottom:54px;left:12px;font-size:12px;">✨</span>
+      <span class="tag">手取りから設定価格を計算</span>
+      <label class="field-label" for="net">手取りでほしい金額（円）</label>
+      <div class="inputbox">
+        <input class="amt" id="net" type="number" inputmode="numeric" placeholder="0" autocomplete="off">
+        <span class="unit">円</span>
+      </div>
+      <div class="eq">
+        <div class="line">
+          <span class="num big" id="setOut">0</span><span class="u">円に設定</span>
+          <span class="eqsign">＝</span>
+          <span class="u">手取り</span><span class="num sub" id="netEcho">0</span><span class="u">円</span>
+        </div>
+      </div>
+      <div class="fee-note" id="fee-note"></div>
+      <div class="btn-row">
+        <button class="copy-btn" id="copy3">📋 設定価格をコピー</button>
+        <button class="clear-btn" id="clear3">クリア</button>
+      </div>
+    </div>
   </div>
 
   <!-- 履歴 -->
@@ -306,7 +343,7 @@
     <div id="hist-list"><div class="empty">履歴はまだありません</div></div>
     <button class="clear-all" id="clear-all">🗑 履歴をすべて消す</button>
     <div class="sync-note" id="sync-note"></div>
-    <div class="ver">ver. 12（確定で履歴）</div>
+    <div class="ver">ver. 13（手取り計算＋日時）</div>
   </div>
 </div>
 
@@ -330,6 +367,14 @@
     <p class="hint" style="margin:6px 0 0">例：1円＝12.5ハピ（6,960円＝87,000ハピ）</p>
 
     <div class="preview" id="set-preview"></div>
+
+    <hr>
+
+    <label for="set-salefee">販売手数料（％）<span style="font-weight:400;color:#b39ccb">／ 手取り→設定価格カード用</span></label>
+    <div class="field">
+      <input id="set-salefee" type="number" inputmode="decimal" step="0.1">
+      <span class="u">％</span>
+    </div>
 
     <hr>
 
@@ -359,8 +404,11 @@
   function lsGet(k) { try { return window.localStorage.getItem(k); } catch (e) { return null; } }
   function lsSet(k, v) { try { window.localStorage.setItem(k, v); } catch (e) {} }
 
+  var DEFAULT_SALEFEE = 8.8;  // 販売手数料（％）
+
   var fee  = parseFloat(lsGet('happi_fee'))  || DEFAULT_FEE;
   var rate = parseFloat(lsGet('happi_rate')) || DEFAULT_RATE;
+  var saleFee = parseFloat(lsGet('happi_salefee')); if (isNaN(saleFee)) saleFee = DEFAULT_SALEFEE;
   var webhook = lsGet('happi_webhook');
   if (webhook === null) webhook = DEFAULT_WEBHOOK;   // 一度も保存していなければ既定を使う
   var histLog;
@@ -438,6 +486,10 @@
   var out2 = document.getElementById('out2');
   var echo1 = document.getElementById('echo1');
   var echo2 = document.getElementById('echo2');
+  var net = document.getElementById('net');
+  var setOut = document.getElementById('setOut');
+  var netEcho = document.getElementById('netEcho');
+  var feeNote = document.getElementById('fee-note');
 
   function calc1() {
     var v = parseFloat(amount.value);
@@ -451,42 +503,68 @@
     echo2.textContent = fmt(v);
     out2.textContent = fmt(v * divisor() / rate);
   }
-  function recalc() { calc1(); calc2(); }
+  // 手取り→設定価格：設定価格 = 手取り ÷ (1 − 販売手数料%)
+  function setPriceOf(net) { return net / (1 - saleFee / 100); }
+  function calc3() {
+    var v = parseFloat(net.value);
+    if (isNaN(v)) {
+      setOut.textContent = '0'; netEcho.textContent = '0';
+      feeNote.textContent = '販売手数料 ' + fmtNum(saleFee) + '%';
+      return;
+    }
+    var price = setPriceOf(v);
+    setOut.textContent = fmt(price);
+    netEcho.textContent = fmt(v);
+    feeNote.textContent = '販売手数料 ' + fmtNum(saleFee) + '%（差し引き ' + fmt(price - v) + '円）';
+  }
+  function recalc() { calc1(); calc2(); calc3(); }
 
   // ===== 自動保存（3秒）=====
   var timer1 = null, timer2 = null;
-  var lastKey = { h: null, y: null };
+  var lastKey = { h: null, y: null, f: null };
+
+  function elOf(dir) { return dir === 'h' ? amount : (dir === 'y' ? happi : net); }
+  function outOf(dir, v) {
+    if (dir === 'h') return v / divisor() * rate;
+    if (dir === 'y') return v * divisor() / rate;
+    return setPriceOf(v);   // 'f'
+  }
 
   function autoSave(dir) {
-    var el = dir === 'h' ? amount : happi;
-    var v = parseFloat(el.value);
+    var v = parseFloat(elOf(dir).value);
     if (isNaN(v) || v === 0) return;
-    var key = dir + ':' + v + ':' + fee + ':' + rate;
+    var key = dir + ':' + v + ':' + fee + ':' + rate + ':' + saleFee;
     if (lastKey[dir] === key) return;   // 同じ内容は重複保存しない
     lastKey[dir] = key;
-    var outVal = dir === 'h' ? v / divisor() * rate : v * divisor() / rate;
-    saveHistory(dir, v, outVal);
+    saveHistory(dir, v, outOf(dir, v));
   }
 
   // 入力中はリアルタイム計算のみ
   amount.addEventListener('input', calc1);
   happi.addEventListener('input', calc2);
+  net.addEventListener('input', calc3);
 
   // 入力を確定したら履歴に保存：PCはEnter、iPhoneはキーボードの✓（完了→change）
   amount.addEventListener('change', function () { autoSave('h'); });
   happi.addEventListener('change', function () { autoSave('y'); });
-  amount.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' || e.keyCode === 13) { autoSave('h'); amount.blur(); }
-  });
-  happi.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter' || e.keyCode === 13) { autoSave('y'); happi.blur(); }
-  });
+  net.addEventListener('change', function () { autoSave('f'); });
+  function enterToSave(el, dir) {
+    el.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.keyCode === 13) { autoSave(dir); el.blur(); }
+    });
+  }
+  enterToSave(amount, 'h');
+  enterToSave(happi, 'y');
+  enterToSave(net, 'f');
 
   document.getElementById('clear1').addEventListener('click', function () {
     amount.value = ''; calc1(); lastKey.h = null; amount.focus();
   });
   document.getElementById('clear2').addEventListener('click', function () {
     happi.value = ''; calc2(); lastKey.y = null; happi.focus();
+  });
+  document.getElementById('clear3').addEventListener('click', function () {
+    net.value = ''; calc3(); lastKey.f = null; net.focus();
   });
 
   // ===== コピー（押したら即履歴に保存）=====
@@ -503,10 +581,9 @@
   }
 
   function copyResult(dir) {
-    var el = dir === 'h' ? amount : happi;
-    var v = parseFloat(el.value);
+    var v = parseFloat(elOf(dir).value);
     if (isNaN(v) || v === 0) { toast('先に数字を入れてください', true); return; }
-    var outVal = dir === 'h' ? v / divisor() * rate : v * divisor() / rate;
+    var outVal = outOf(dir, v);
     var unit = dir === 'h' ? 'ハピ' : '円';
     copyText(String(Math.round(outVal)))
       .then(function () { toast('📋 コピー：' + fmt(outVal) + unit); })
@@ -517,11 +594,12 @@
 
   document.getElementById('copy1').addEventListener('click', function () { copyResult('h'); });
   document.getElementById('copy2').addEventListener('click', function () { copyResult('y'); });
+  document.getElementById('copy3').addEventListener('click', function () { copyResult('f'); });
 
   // ===== 履歴 =====
   function saveHistory(dir, inVal, outVal) {
     if (isNaN(inVal) || inVal === 0) return;
-    var entry = { id: Date.now(), dir: dir, in: inVal, out: outVal, fee: fee, rate: rate };
+    var entry = { id: Date.now(), dir: dir, in: inVal, out: outVal, fee: dir === 'f' ? saleFee : fee, rate: rate };
     histLog.unshift(entry);
     if (histLog.length > 100) histLog = histLog.slice(0, 100);
     renderHistory();                               // まず画面に出す（保存が失敗しても表示は出る）
@@ -534,8 +612,21 @@
     }
   }
 
-  // ○○ハピ ＝ □□円 形式
+  // 日時 yyyy/mm/dd HH:MM
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  function fmtDateTime(ms) {
+    if (!ms) return '';
+    var d = new Date(ms);
+    return d.getFullYear() + '/' + pad2(d.getMonth() + 1) + '/' + pad2(d.getDate()) +
+           ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+  }
+
+  // 履歴1件の式 表示
   function histEqHtml(e) {
+    if (e.dir === 'f') {  // 手取り→設定価格
+      return '設定<span class="y">' + fmt(e.out) + '</span>円<span class="s">＝</span>' +
+             '手取り<span class="p">' + fmt(e.in) + '</span>円';
+    }
     var hapi = e.dir === 'h' ? e.out : e.in;
     var yen  = e.dir === 'h' ? e.in  : e.out;
     return '<span class="p">' + fmt(hapi) + '</span>ハピ<span class="s">＝</span>' +
@@ -552,9 +643,14 @@
     }
     clearAll.style.display = 'block';
     list.innerHTML = histLog.map(function (e, i) {
-      var tag = '手数料' + fmtNum(e.fee) + '% ／ ' + fmtNum(e.rate) + 'ハピ/円';
+      var tag = e.dir === 'f'
+        ? '販売手数料' + fmtNum(e.fee) + '%'
+        : '手数料' + fmtNum(e.fee) + '% ／ ' + fmtNum(e.rate) + 'ハピ/円';
       return '<div class="hist-item" data-index="' + i + '">' +
-        '<div class="hist-eq">' + histEqHtml(e) + '</div>' +
+        '<div class="hist-left">' +
+          '<div class="hist-eq">' + histEqHtml(e) + '</div>' +
+          '<div class="hist-date">' + fmtDateTime(e.id) + '</div>' +
+        '</div>' +
         '<span class="hist-tag">' + tag + '</span>' +
         '<button class="del-btn" data-del="' + i + '">🗑 削除</button>' +
       '</div>';
@@ -617,12 +713,16 @@
 
   function loadHistory(i) {
     var e = histLog[i];
+    var tail = ':' + fee + ':' + rate + ':' + saleFee;
     if (e.dir === 'h') {
-      amount.value = e.in; calc1(); lastKey.h = 'h:' + e.in + ':' + fee + ':' + rate;
+      amount.value = e.in; calc1(); lastKey.h = 'h:' + e.in + tail;
       amount.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } else {
-      happi.value = e.in; calc2(); lastKey.y = 'y:' + e.in + ':' + fee + ':' + rate;
+    } else if (e.dir === 'y') {
+      happi.value = e.in; calc2(); lastKey.y = 'y:' + e.in + tail;
       happi.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      net.value = e.in; calc3(); lastKey.f = 'f:' + e.in + tail;
+      net.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }
 
@@ -639,6 +739,7 @@
   var modal = document.getElementById('modal');
   var setFee = document.getElementById('set-fee');
   var setRate = document.getElementById('set-rate');
+  var setSaleFee = document.getElementById('set-salefee');
   var setWebhook = document.getElementById('set-webhook');
   var setPreview = document.getElementById('set-preview');
 
@@ -652,7 +753,7 @@
   setRate.addEventListener('input', updatePreview);
 
   function openSettings() {
-    setFee.value = fee; setRate.value = rate; setWebhook.value = webhook;
+    setFee.value = fee; setRate.value = rate; setSaleFee.value = saleFee; setWebhook.value = webhook;
     updatePreview(); modal.classList.add('show');
   }
   function closeSettings() { modal.classList.remove('show'); }
@@ -664,14 +765,16 @@
   document.getElementById('set-save').addEventListener('click', function () {
     var f = parseFloat(setFee.value);
     var r = parseFloat(setRate.value);
-    if (isNaN(f) || isNaN(r) || r === 0 || f >= 100) {
-      alert('手数料は0〜99％、レートは0より大きい数を入れてください。');
+    var sf = parseFloat(setSaleFee.value);
+    if (isNaN(f) || isNaN(r) || r === 0 || f >= 100 || isNaN(sf) || sf >= 100) {
+      alert('手数料・販売手数料は0〜99％、レートは0より大きい数を入れてください。');
       return;
     }
     var feeOrRateChanged = (f !== fee || r !== rate);
-    fee = f; rate = r;
+    fee = f; rate = r; saleFee = sf;
     lsSet('happi_fee', fee);
     lsSet('happi_rate', rate);
+    lsSet('happi_salefee', saleFee);
 
     var newHook = setWebhook.value.trim();
     var hookChanged = newHook !== webhook;
@@ -689,7 +792,7 @@
   });
 
   document.getElementById('set-reset').addEventListener('click', function () {
-    setFee.value = DEFAULT_FEE; setRate.value = DEFAULT_RATE; updatePreview();
+    setFee.value = DEFAULT_FEE; setRate.value = DEFAULT_RATE; setSaleFee.value = DEFAULT_SALEFEE; updatePreview();
   });
 
   // ===== 初期描画 =====
