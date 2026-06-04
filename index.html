@@ -7,12 +7,13 @@
 <style>
   :root {
     --pink: #ff7fb6;
-    --pink-deep: #ff4f9a;
-    --mint: #5fd3a3;
-    --mint-deep: #43c08e;
-    --lav: #c9a9ef;
+    --pink-deep: #ff5ba0;
+    --mint: #63d6a6;
+    --mint-deep: #2bb583;
+    --lav: #c4a3ef;
     --sky: #8fd4f0;
-    --ink: #6b5b80;
+    --ink: #7a6a90;
+    --yellow: #ffcf5a;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body {
@@ -20,7 +21,11 @@
     font-family: "Hiragino Maru Gothic ProN", "Quicksand", "Rounded Mplus 1c",
                  -apple-system, "メイリオ", sans-serif;
     color: var(--ink);
-    background: linear-gradient(170deg, #dcc6f4 0%, #f6d6ea 45%, #cdeede 100%);
+    background:
+      radial-gradient(circle at 12% 8%, rgba(255,255,255,.55) 0 2px, transparent 3px),
+      radial-gradient(circle at 82% 22%, rgba(255,255,255,.5) 0 2px, transparent 3px),
+      radial-gradient(circle at 68% 6%, rgba(255,255,255,.45) 0 1.5px, transparent 2.5px),
+      linear-gradient(170deg, #d7c0f3 0%, #f4d2e7 42%, #cfeede 78%, #d3eaf7 100%);
     background-attachment: fixed;
     min-height: 100vh;
     display: flex;
@@ -28,105 +33,131 @@
   }
   .wrap { width: 100%; max-width: 440px; padding: 0 0 70px; }
 
-  /* SVG四つ葉 */
-  .clover { width: 1em; height: 1em; vertical-align: -0.15em; }
+  .clover { width: 1em; height: 1em; vertical-align: -0.15em; filter: drop-shadow(0 1px 1px rgba(150,110,190,.3)); }
 
+  /* ヘッダー */
   header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 16px 18px 8px;
+    padding: 18px 18px 10px;
   }
   header h1 {
-    font-size: 19px; margin: 0; color: #fff; letter-spacing: .04em;
-    text-shadow: 0 2px 6px rgba(160,110,200,.35);
+    font-size: 22px; margin: 0; color: #fff; letter-spacing: .03em; font-weight: 800;
     display: flex; align-items: center; gap: 6px;
+    -webkit-text-stroke: 4px #fff; paint-order: stroke fill;
+    text-shadow: 0 2px 0 #ffb6d6, 0 4px 7px rgba(160,110,200,.35);
   }
+  header h1 .txt { color: #ff79b3; }
   .gear {
-    width: 40px; height: 40px; border-radius: 50%; border: none;
-    background: rgba(255,255,255,.75); color: #a06bd0; font-size: 20px;
-    cursor: pointer; box-shadow: 0 3px 8px rgba(160,110,200,.25);
+    width: 44px; height: 44px; border-radius: 50%; border: 3px solid #fff;
+    background: #fff; color: #b884e0; font-size: 21px; cursor: pointer;
+    box-shadow: 0 4px 0 #e6d3f7, 0 6px 10px rgba(160,110,200,.2);
   }
+  .gear:active { transform: translateY(2px); box-shadow: 0 2px 0 #e6d3f7; }
 
   .body { padding: 8px 16px 0; }
 
-  /* 計算カード */
+  /* カード */
   .card {
-    background: #fff; border-radius: 26px; padding: 18px 18px 20px;
-    margin-bottom: 18px; box-shadow: 0 8px 22px rgba(190,140,220,.22);
+    position: relative; border-radius: 28px; padding: 18px 18px 20px;
+    margin-bottom: 18px; border: 3px solid #fff;
+    box-shadow: 0 10px 24px rgba(190,140,220,.28);
   }
+  .card.toHapi { background: linear-gradient(160deg, #eafaff 0%, #f3ecff 100%); }
+  .card.toYen  { background: linear-gradient(160deg, #eafff4 0%, #eef9ff 100%); }
+  .card .spark { position: absolute; pointer-events: none; font-size: 15px; opacity: .85; }
+
   .card .tag {
-    display: inline-block; font-size: 12px; font-weight: 700; color: #fff;
-    padding: 4px 14px; border-radius: 999px; margin-bottom: 14px;
+    display: inline-block; font-size: 13px; font-weight: 800; color: #fff;
+    padding: 6px 18px; border-radius: 999px; margin-bottom: 14px;
+    -webkit-text-stroke: 0; text-shadow: 0 1px 2px rgba(120,80,160,.35);
+    box-shadow: 0 3px 0 rgba(150,110,190,.18);
   }
-  .card.toHapi .tag { background: linear-gradient(120deg, var(--lav), var(--sky)); }
+  .card.toHapi .tag { background: linear-gradient(120deg, #b89bef, var(--sky)); }
   .card.toYen  .tag { background: linear-gradient(120deg, var(--mint), #8fe0c4); }
 
-  label.field-label { display: block; font-size: 13px; font-weight: 700; color: #b39ccb; margin-bottom: 6px; }
+  label.field-label { display: block; font-size: 13px; font-weight: 800; color: #b39ccb; margin-bottom: 6px; }
   .inputbox {
-    display: flex; align-items: center; background: #faf6ff;
-    border: 2.5px solid #ecdcfb; border-radius: 16px; padding: 2px 16px;
+    display: flex; align-items: center; background: #fff;
+    border: 3px solid #ecdcfb; border-radius: 18px; padding: 2px 16px;
   }
-  .inputbox:focus-within { border-color: var(--lav); background: #fff; }
+  .inputbox:focus-within { border-color: var(--lav); }
   input.amt {
-    flex: 1; border: none; outline: none; font-size: 30px; font-weight: 700;
+    flex: 1; border: none; outline: none; font-size: 30px; font-weight: 800;
     padding: 12px 4px; width: 100%; text-align: right; background: transparent;
     color: #6b5b80;
   }
-  .inputbox .unit { font-size: 16px; color: #b39ccb; padding-left: 6px; font-weight: 700; }
+  .inputbox .unit { font-size: 16px; color: #b39ccb; padding-left: 6px; font-weight: 800; }
 
-  /* 結果：○○ハピ ＝ □□円 */
+  /* 結果：○○ハピ ＝ □□円（白フチ極太数字）*/
   .eq {
-    margin-top: 16px; border-radius: 18px; padding: 16px 14px;
-    text-align: center; line-height: 1.5;
+    margin-top: 16px; border-radius: 20px; padding: 18px 12px;
+    text-align: center; line-height: 1.3; border: 2.5px solid #fff;
   }
-  .card.toHapi .eq { background: linear-gradient(135deg, #fff0f7, #f3eaff); }
-  .card.toYen  .eq { background: linear-gradient(135deg, #eafaf3, #eef9ff); }
-  .eq .num { font-size: 30px; font-weight: 800; }
-  .eq .num.big { font-size: 36px; }
-  .card.toHapi .eq .num.big { color: var(--pink-deep); }
-  .card.toYen  .eq .num.big { color: var(--mint-deep); }
-  .eq .num.sub { color: #b3a0c8; }
-  .eq .u { font-size: 15px; font-weight: 700; color: #9a86b5; margin: 0 2px; }
-  .eq .eqsign { font-size: 24px; color: #cbb8e0; margin: 0 8px; font-weight: 700; }
+  .card.toHapi .eq { background: linear-gradient(135deg, #bfe7fb, #e6d8fb); }
+  .card.toYen  .eq { background: linear-gradient(135deg, #c6f3dd, #dff6ff); }
+  .eq .line { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 2px; }
+  .eq .num {
+    font-weight: 800; -webkit-text-stroke: 5px #fff; paint-order: stroke fill;
+  }
+  .eq .num.big { font-size: 40px; }
+  .eq .num.sub { font-size: 26px; }
+  .card.toHapi .eq .num.big { color: var(--pink-deep); text-shadow: 0 3px 0 #ffaed1, 0 6px 8px rgba(150,100,180,.3); }
+  .card.toHapi .eq .num.sub { color: #8fb4e8; text-shadow: 0 2px 0 #c5dcff; }
+  .card.toYen  .eq .num.big { color: var(--mint-deep); text-shadow: 0 3px 0 #8fe2bf, 0 6px 8px rgba(120,160,140,.3); }
+  .card.toYen  .eq .num.sub { color: #f0a94e; text-shadow: 0 2px 0 #ffd99a; }
+  .eq .u { font-size: 15px; font-weight: 800; color: #fff; margin: 0 1px 0 3px;
+           -webkit-text-stroke: 0; text-shadow: 0 1px 2px rgba(120,80,160,.45); }
+  .eq .u.clo { color: inherit; }
+  .eq .eqsign { font-size: 26px; color: #fff; margin: 0 8px; font-weight: 800; text-shadow: 0 1px 2px rgba(120,80,160,.4); }
 
   .clear-btn {
-    display: block; width: 100%; margin-top: 14px; padding: 11px; font-size: 14px;
-    border: none; border-radius: 14px; background: #f3ecfb; color: #b39ccb;
-    cursor: pointer; font-family: inherit; font-weight: 700;
+    display: block; width: 100%; margin-top: 16px; padding: 12px; font-size: 14px;
+    border: 2.5px solid #fff; border-radius: 16px; background: #fff; color: #b39ccb;
+    cursor: pointer; font-family: inherit; font-weight: 800; box-shadow: 0 3px 0 #ecdcfb;
   }
-  .clear-btn:active { background: #e9ddf7; }
+  .clear-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #ecdcfb; }
 
   /* 履歴 */
-  .history { padding: 14px 16px 0; }
+  .history { padding: 16px 16px 0; }
   .history h2 {
-    font-size: 15px; color: #fff; margin: 0 0 12px; text-shadow: 0 2px 5px rgba(160,110,200,.3);
+    font-size: 18px; color: #fff; margin: 0 0 12px; font-weight: 800;
     display: flex; align-items: center; gap: 6px;
+    -webkit-text-stroke: 3px #fff; paint-order: stroke fill;
+    text-shadow: 0 2px 0 #c7a6ef, 0 4px 6px rgba(160,110,200,.3);
   }
+  .history h2 .txt { color: #b07fe0; }
   .hist-item {
-    background: #fff; border-radius: 18px; padding: 14px 16px; margin-bottom: 10px;
+    background: #fff; border-radius: 20px; padding: 14px 16px; margin-bottom: 10px;
     display: flex; align-items: center; justify-content: space-between;
-    box-shadow: 0 4px 12px rgba(190,140,220,.16); cursor: pointer; user-select: none;
-    transition: transform .15s, box-shadow .15s;
+    box-shadow: 0 5px 12px rgba(190,140,220,.18); cursor: pointer; user-select: none;
+    border: 2.5px solid #fff; transition: transform .15s, box-shadow .15s;
   }
-  .hist-item.pressing { transform: scale(0.97); box-shadow: 0 0 0 2.5px var(--lav) inset; }
-  .hist-eq { font-size: 16px; font-weight: 700; color: #6b5b80; }
-  .hist-eq .p { color: var(--pink-deep); }
-  .hist-eq .y { color: var(--mint-deep); }
+  .hist-item.pressing { transform: scale(0.97); box-shadow: 0 0 0 3px var(--lav) inset; }
+  .hist-eq { font-size: 16px; font-weight: 800; color: #8a78a8; }
+  .hist-eq .p { color: var(--pink-deep); font-size: 18px; }
+  .hist-eq .y { color: var(--mint-deep); font-size: 18px; }
   .hist-eq .s { color: #cbb8e0; margin: 0 5px; }
   .hist-tag { font-size: 11px; color: #c3b2d8; white-space: nowrap; padding-left: 10px; }
   .del-btn {
-    display: none; background: var(--pink); color: #fff; border: none;
-    border-radius: 12px; padding: 9px 16px; font-size: 14px; font-weight: 700;
-    cursor: pointer; font-family: inherit;
+    display: none; background: linear-gradient(var(--pink), var(--pink-deep)); color: #fff;
+    border: none; border-radius: 14px; padding: 9px 16px; font-size: 14px; font-weight: 800;
+    cursor: pointer; font-family: inherit; box-shadow: 0 3px 0 #e24f8e;
   }
   .hist-item.show-delete .hist-tag { display: none; }
   .hist-item.show-delete .del-btn { display: inline-block; }
-  .empty { color: rgba(255,255,255,.85); font-size: 14px; text-align: center; padding: 18px 0; text-shadow: 0 1px 3px rgba(160,110,200,.25); }
+  .empty {
+    color: #fff; font-size: 14px; text-align: center; padding: 18px 0; font-weight: 700;
+    text-shadow: 0 1px 3px rgba(160,110,200,.3);
+  }
   .clear-all {
     display: none; width: 100%; margin-top: 6px; padding: 12px; font-size: 13px;
-    border: none; border-radius: 14px; background: rgba(255,255,255,.6); color: #b06a9a;
-    cursor: pointer; font-family: inherit; font-weight: 700;
+    border: 2.5px solid #fff; border-radius: 16px; background: rgba(255,255,255,.55); color: #b06a9a;
+    cursor: pointer; font-family: inherit; font-weight: 800;
   }
-  .sync-note { font-size: 12px; color: rgba(255,255,255,.95); text-align: center; padding: 8px 0 0; text-shadow: 0 1px 3px rgba(160,110,200,.25); }
+  .sync-note {
+    font-size: 12px; color: #fff; text-align: center; padding: 10px 0 0; font-weight: 700;
+    text-shadow: 0 1px 3px rgba(160,110,200,.3);
+  }
 
   /* モーダル */
   .modal-bg {
@@ -135,37 +166,39 @@
   }
   .modal-bg.show { display: flex; }
   .modal {
-    background: #fff; border-radius: 24px; padding: 24px; max-width: 420px;
-    width: 100%; max-height: 86vh; overflow-y: auto;
-    box-shadow: 0 12px 40px rgba(120,80,160,.3);
+    background: #fff; border-radius: 28px; padding: 24px; max-width: 420px;
+    width: 100%; max-height: 86vh; overflow-y: auto; border: 4px solid #f3e9fc;
+    box-shadow: 0 14px 44px rgba(120,80,160,.35);
   }
-  .modal h2 { font-size: 17px; margin: 0 0 4px; color: #a06bd0; }
+  .modal h2 { font-size: 18px; margin: 0 0 4px; color: #b07fe0; font-weight: 800; }
   .modal .hint { font-size: 12px; color: #b39ccb; margin: 0 0 14px; }
-  .modal label { display: block; font-size: 14px; font-weight: 700; color: #8a76a8; margin: 14px 0 6px; }
+  .modal label { display: block; font-size: 14px; font-weight: 800; color: #8a76a8; margin: 14px 0 6px; }
   .modal .field { display: flex; align-items: center; gap: 8px; }
   .modal .field input {
-    flex: 1; padding: 12px; border: 2.5px solid #ecdcfb; border-radius: 14px;
-    font-size: 18px; font-family: inherit; outline: none; text-align: right; color: #6b5b80; font-weight: 700;
+    flex: 1; padding: 12px; border: 3px solid #ecdcfb; border-radius: 16px;
+    font-size: 18px; font-family: inherit; outline: none; text-align: right; color: #6b5b80; font-weight: 800;
   }
   .modal .field input:focus { border-color: var(--lav); }
-  .modal .field .u { font-size: 14px; color: #b39ccb; font-weight: 700; }
+  .modal .field .u { font-size: 14px; color: #b39ccb; font-weight: 800; }
   .modal .preview {
-    margin-top: 16px; background: #f7f1fe; border-radius: 14px; padding: 12px;
-    font-size: 13px; color: #8a76a8; text-align: center; font-weight: 700;
+    margin-top: 16px; background: #f7f1fe; border-radius: 16px; padding: 12px;
+    font-size: 13px; color: #8a76a8; text-align: center; font-weight: 800;
   }
   .modal .urlinput {
-    width: 100%; padding: 12px; border: 2.5px solid #ecdcfb; border-radius: 14px;
+    width: 100%; padding: 12px; border: 3px solid #ecdcfb; border-radius: 16px;
     font-size: 13px; font-family: inherit; outline: none; color: #6b5b80;
   }
   .modal .urlinput:focus { border-color: var(--lav); }
-  .modal hr { border: none; border-top: 1px solid #f0e8fa; margin: 20px 0; }
+  .modal hr { border: none; border-top: 2px dashed #f0e3fb; margin: 20px 0; }
   .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
   .modal-actions button {
-    flex: 1; padding: 14px; border-radius: 16px; font-weight: 800;
+    flex: 1; padding: 15px; border-radius: 18px; font-weight: 800;
     font-family: inherit; cursor: pointer; border: none; font-size: 15px;
   }
-  .modal-actions .save { background: linear-gradient(120deg, var(--mint), #7fe0bf); color: #fff; }
-  .modal-actions .cancel { background: #f3ecfb; color: #b39ccb; }
+  .modal-actions .save { background: linear-gradient(var(--mint), var(--mint-deep)); color: #fff; box-shadow: 0 4px 0 #1f9d72; }
+  .modal-actions .save:active { transform: translateY(2px); box-shadow: 0 2px 0 #1f9d72; }
+  .modal-actions .cancel { background: #f3ecfb; color: #b39ccb; box-shadow: 0 4px 0 #e6d6f7; }
+  .modal-actions .cancel:active { transform: translateY(2px); box-shadow: 0 2px 0 #e6d6f7; }
   .reset-link {
     display: block; text-align: center; margin-top: 14px; font-size: 12px;
     color: #c3b2d8; cursor: pointer; text-decoration: underline;
@@ -173,36 +206,38 @@
 
   #toast {
     position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(20px);
-    background: #8a6bb0; color: #fff; padding: 12px 22px; border-radius: 16px;
-    font-size: 14px; font-weight: 700; opacity: 0; pointer-events: none;
+    background: #9a6bc8; color: #fff; padding: 13px 24px; border-radius: 18px;
+    font-size: 14px; font-weight: 800; opacity: 0; pointer-events: none;
     transition: all .25s; z-index: 100; max-width: 90%; text-align: center;
-    box-shadow: 0 6px 18px rgba(120,80,160,.35);
+    box-shadow: 0 6px 18px rgba(120,80,160,.4); border: 2.5px solid #fff;
   }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   #toast.err { background: var(--pink-deep); }
 </style>
 </head>
 <body>
-<!-- 四つ葉アイコン -->
+<!-- 四つ葉アイコン（ハピコイン）-->
 <svg width="0" height="0" style="position:absolute">
   <symbol id="clover" viewBox="0 0 32 32">
-    <circle cx="16" cy="9"  r="6.3" fill="#ff9ecb"/>
-    <circle cx="23" cy="16" r="6.3" fill="#8fd4f0"/>
-    <circle cx="16" cy="23" r="6.3" fill="#97e0a8"/>
-    <circle cx="9"  cy="16" r="6.3" fill="#ffe08a"/>
+    <circle cx="16" cy="9"  r="6.6" fill="#ff9ecb"/>
+    <circle cx="23" cy="16" r="6.6" fill="#8fd4f0"/>
+    <circle cx="16" cy="23" r="6.6" fill="#97e0a8"/>
+    <circle cx="9"  cy="16" r="6.6" fill="#ffe08a"/>
     <circle cx="16" cy="16" r="3.4" fill="#fff"/>
   </symbol>
 </svg>
 
 <div class="wrap">
   <header>
-    <h1><svg class="clover"><use href="#clover"/></svg> ハピ価格計算</h1>
+    <h1><svg class="clover"><use href="#clover"/></svg> <span class="txt">ハピ価格計算</span></h1>
     <button class="gear" id="gear" title="設定">⚙</button>
   </header>
 
   <div class="body">
     <!-- 金額 → ハピ -->
     <div class="card toHapi">
+      <span class="spark" style="top:10px;right:16px;">✨</span>
+      <span class="spark" style="bottom:54px;left:12px;font-size:12px;">✨</span>
       <span class="tag">金額からハピを計算</span>
       <label class="field-label" for="amount">希望金額（円）</label>
       <div class="inputbox">
@@ -210,15 +245,19 @@
         <span class="unit">円</span>
       </div>
       <div class="eq">
-        <span class="num big" id="out">0</span><span class="u"><svg class="clover"><use href="#clover"/></svg>ハピ</span>
-        <span class="eqsign">＝</span>
-        <span class="num sub" id="echo1">0</span><span class="u">円</span>
+        <div class="line">
+          <span class="num big" id="out">0</span><span class="u clo"><svg class="clover"><use href="#clover"/></svg></span><span class="u">ハピ</span>
+          <span class="eqsign">＝</span>
+          <span class="num sub" id="echo1">0</span><span class="u">円</span>
+        </div>
       </div>
       <button class="clear-btn" id="clear1">クリア</button>
     </div>
 
     <!-- ハピ → 金額 -->
     <div class="card toYen">
+      <span class="spark" style="top:10px;right:16px;">✨</span>
+      <span class="spark" style="bottom:54px;left:12px;font-size:12px;">✨</span>
       <span class="tag">ハピから金額を計算</span>
       <label class="field-label" for="happi">ハピ販売価格</label>
       <div class="inputbox">
@@ -226,9 +265,11 @@
         <span class="unit">ハピ</span>
       </div>
       <div class="eq">
-        <span class="num sub" id="echo2">0</span><span class="u"><svg class="clover"><use href="#clover"/></svg>ハピ</span>
-        <span class="eqsign">＝</span>
-        <span class="num big" id="out2">0</span><span class="u">円</span>
+        <div class="line">
+          <span class="num sub" id="echo2">0</span><span class="u clo"><svg class="clover"><use href="#clover"/></svg></span><span class="u">ハピ</span>
+          <span class="eqsign">＝</span>
+          <span class="num big" id="out2">0</span><span class="u">円</span>
+        </div>
       </div>
       <button class="clear-btn" id="clear2">クリア</button>
     </div>
@@ -236,7 +277,7 @@
 
   <!-- 履歴 -->
   <div class="history">
-    <h2><svg class="clover"><use href="#clover"/></svg> 計算履歴</h2>
+    <h2><svg class="clover"><use href="#clover"/></svg> <span class="txt">計算履歴</span></h2>
     <div id="hist-list"><div class="empty">履歴はまだありません</div></div>
     <button class="clear-all" id="clear-all">🗑 履歴をすべて消す</button>
     <div class="sync-note" id="sync-note"></div>
