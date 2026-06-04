@@ -15,160 +15,435 @@
     justify-content: center;
     min-height: 100vh;
   }
-  .wrap {
-    width: 100%;
-    max-width: 420px;
-    padding: 24px 18px 60px;
-  }
-  h1 {
-    font-size: 20px;
-    text-align: center;
-    margin: 18px 0 6px;
-  }
-  .formula {
-    text-align: center;
-    font-size: 13px;
-    color: #6b7280;
-    margin-bottom: 24px;
-  }
-  label {
-    display: block;
-    font-size: 15px;
-    font-weight: bold;
-    margin-bottom: 8px;
-  }
-  .inputbox {
+  .wrap { width: 100%; max-width: 440px; padding: 0 0 60px; }
+
+  header {
+    background: #1f2937;
+    color: #fff;
+    padding: 14px 16px;
     display: flex;
     align-items: center;
-    background: #fff;
-    border: 2px solid #d1d5db;
-    border-radius: 12px;
-    padding: 4px 14px;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  header h1 { font-size: 17px; margin: 0; }
+  .gear {
+    background: transparent; border: none; color: rgba(255,255,255,0.85);
+    font-size: 22px; cursor: pointer; padding: 2px 6px;
+  }
+
+  .body { padding: 20px 18px 0; }
+
+  .formula { text-align: center; font-size: 13px; color: #6b7280; margin: 4px 0 18px; }
+
+  label { display: block; font-size: 15px; font-weight: bold; margin-bottom: 8px; }
+  .inputbox {
+    display: flex; align-items: center; background: #fff;
+    border: 2px solid #d1d5db; border-radius: 12px; padding: 4px 14px;
   }
   .inputbox:focus-within { border-color: #2563eb; }
-  input {
-    flex: 1;
-    border: none;
-    outline: none;
-    font-size: 28px;
-    padding: 14px 4px;
-    width: 100%;
-    text-align: right;
-    background: transparent;
+  input.amt {
+    flex: 1; border: none; outline: none; font-size: 28px; padding: 14px 4px;
+    width: 100%; text-align: right; background: transparent;
   }
   .unit { font-size: 16px; color: #6b7280; padding-left: 6px; }
 
   .result {
-    margin-top: 28px;
-    background: #2563eb;
-    color: #fff;
-    border-radius: 16px;
-    padding: 22px 18px;
-    text-align: center;
-  }
-  .result .cap { font-size: 14px; opacity: .85; }
-  .result .val {
-    font-size: 40px;
-    font-weight: bold;
-    margin: 6px 0 0;
-    word-break: break-all;
-  }
-  .result .val small { font-size: 18px; font-weight: normal; }
-
-  .clear {
-    display: block;
-    width: 100%;
-    margin-top: 18px;
-    padding: 14px;
-    font-size: 16px;
-    border: none;
-    border-radius: 12px;
-    background: #e5e7eb;
-    color: #374151;
-    cursor: pointer;
-  }
-  .clear:active { background: #d1d5db; }
-
-  .divider {
-    border: none;
-    border-top: 1px dashed #cbd5e1;
-    margin: 38px 0 24px;
+    margin-top: 22px; background: #2563eb; color: #fff;
+    border-radius: 16px; padding: 20px 18px; text-align: center;
   }
   .result.green { background: #059669; }
+  .result .cap { font-size: 14px; opacity: .85; }
+  .result .val { font-size: 38px; font-weight: bold; margin: 6px 0 0; word-break: break-all; }
+  .result .val small { font-size: 18px; font-weight: normal; }
+
+  .row { display: flex; gap: 10px; margin-top: 14px; }
+  .row button {
+    flex: 1; padding: 13px; font-size: 15px; border: none; border-radius: 12px;
+    cursor: pointer; font-family: inherit; font-weight: bold;
+  }
+  .btn-save { background: #1f2937; color: #fff; }
+  .btn-save:active { background: #374151; }
+  .btn-clear { background: #e5e7eb; color: #374151; }
+  .btn-clear:active { background: #d1d5db; }
+
+  .divider { border: none; border-top: 1px dashed #cbd5e1; margin: 34px 0 22px; }
+
+  /* 履歴 */
+  .history { padding: 30px 18px 0; }
+  .history h2 { font-size: 15px; color: #374151; margin: 0 0 12px; }
+  .hist-item {
+    background: #fff; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06); cursor: pointer; user-select: none;
+    transition: box-shadow .15s, transform .15s;
+  }
+  .hist-item.pressing { transform: scale(0.98); box-shadow: 0 0 0 2px #2563eb inset; }
+  .hist-left .from { font-size: 13px; color: #6b7280; }
+  .hist-left .to { font-size: 17px; font-weight: bold; margin-top: 2px; }
+  .hist-left .to.green { color: #059669; }
+  .hist-left .to.blue { color: #2563eb; }
+  .hist-tag {
+    font-size: 11px; color: #9ca3af; white-space: nowrap; padding-left: 10px;
+  }
+  .del-btn {
+    display: none; background: #dc2626; color: #fff; border: none;
+    border-radius: 8px; padding: 9px 16px; font-size: 14px; font-weight: bold;
+    cursor: pointer; font-family: inherit;
+  }
+  .hist-item.show-delete .hist-tag { display: none; }
+  .hist-item.show-delete .del-btn { display: inline-block; }
+  .empty { color: #9ca3af; font-size: 14px; text-align: center; padding: 20px 0; }
+  .clear-all {
+    display: none; width: 100%; margin-top: 6px; padding: 12px; font-size: 14px;
+    border: none; border-radius: 10px; background: #fee2e2; color: #b91c1c;
+    cursor: pointer; font-family: inherit; font-weight: bold;
+  }
+
+  /* 設定モーダル */
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50;
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 16px; padding: 22px; max-width: 420px;
+    width: 100%; max-height: 85vh; overflow-y: auto;
+  }
+  .modal h2 { font-size: 17px; margin: 0 0 4px; }
+  .modal .hint { font-size: 12px; color: #6b7280; margin: 0 0 16px; }
+  .modal label { font-size: 14px; margin: 14px 0 6px; }
+  .modal .field { display: flex; align-items: center; gap: 8px; }
+  .modal .field input {
+    flex: 1; padding: 12px; border: 2px solid #d1d5db; border-radius: 10px;
+    font-size: 18px; font-family: inherit; outline: none; text-align: right;
+  }
+  .modal .field input:focus { border-color: #2563eb; }
+  .modal .field .u { font-size: 15px; color: #6b7280; }
+  .modal .preview {
+    margin-top: 18px; background: #f3f4f6; border-radius: 10px; padding: 12px;
+    font-size: 13px; color: #374151; text-align: center;
+  }
+  .modal-actions { display: flex; gap: 8px; margin-top: 20px; }
+  .modal-actions button {
+    flex: 1; padding: 13px; border-radius: 10px; font-weight: bold;
+    font-family: inherit; cursor: pointer; border: none; font-size: 15px;
+  }
+  .modal-actions .save { background: #2563eb; color: #fff; }
+  .modal-actions .cancel { background: #eee; color: #374151; }
+  .reset-link {
+    display: block; text-align: center; margin-top: 14px; font-size: 12px;
+    color: #9ca3af; cursor: pointer; text-decoration: underline;
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>ハピ価格計算</h1>
-  <div class="formula">希望金額 ÷ 0.7 × 12.5 ＝ ハピ販売価格</div>
+  <header>
+    <h1>ハピ価格計算</h1>
+    <button class="gear" id="gear" title="設定">⚙</button>
+  </header>
 
-  <label for="amount">希望金額（円）</label>
-  <div class="inputbox">
-    <input id="amount" type="number" inputmode="numeric" placeholder="0" autocomplete="off">
-    <span class="unit">円</span>
+  <div class="body">
+    <!-- 希望金額 → ハピ -->
+    <div class="formula" id="formula1"></div>
+    <label for="amount">希望金額（円）</label>
+    <div class="inputbox">
+      <input class="amt" id="amount" type="number" inputmode="numeric" placeholder="0" autocomplete="off">
+      <span class="unit">円</span>
+    </div>
+    <div class="result">
+      <div class="cap">ハピ販売価格</div>
+      <div class="val"><span id="out">0</span><small> ハピ</small></div>
+    </div>
+    <div class="row">
+      <button class="btn-save" id="save1">＋ 履歴に保存</button>
+      <button class="btn-clear" id="clear1">クリア</button>
+    </div>
+
+    <hr class="divider">
+
+    <!-- ハピ → 希望金額 -->
+    <div class="formula" id="formula2"></div>
+    <label for="happi">ハピ販売価格</label>
+    <div class="inputbox">
+      <input class="amt" id="happi" type="number" inputmode="numeric" placeholder="0" autocomplete="off">
+      <span class="unit">ハピ</span>
+    </div>
+    <div class="result green">
+      <div class="cap">希望金額</div>
+      <div class="val"><span id="out2">0</span><small> 円</small></div>
+    </div>
+    <div class="row">
+      <button class="btn-save" id="save2">＋ 履歴に保存</button>
+      <button class="btn-clear" id="clear2">クリア</button>
+    </div>
   </div>
 
-  <div class="result">
-    <div class="cap">ハピ販売価格</div>
-    <div class="val"><span id="out">0</span><small> ハピ</small></div>
+  <!-- 履歴 -->
+  <div class="history">
+    <h2>計算履歴</h2>
+    <div id="hist-list"><div class="empty">履歴はまだありません</div></div>
+    <button class="clear-all" id="clear-all">🗑 履歴をすべて消す</button>
   </div>
+</div>
 
-  <button class="clear" id="clear">クリア</button>
+<!-- 設定モーダル -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <h2>⚙ 計算の設定</h2>
+    <p class="hint">手数料やハピのレートが変わったらここで直してください。</p>
 
-  <hr class="divider">
+    <label for="set-fee">手数料（％）</label>
+    <div class="field">
+      <input id="set-fee" type="number" inputmode="decimal" step="0.1">
+      <span class="u">％</span>
+    </div>
 
-  <div class="formula">ハピ販売価格 × 0.7 ÷ 12.5 ＝ 希望金額</div>
+    <label for="set-rate">ハピ換算レート（×）</label>
+    <div class="field">
+      <input id="set-rate" type="number" inputmode="decimal" step="0.1">
+      <span class="u">倍</span>
+    </div>
 
-  <label for="happi">ハピ販売価格</label>
-  <div class="inputbox">
-    <input id="happi" type="number" inputmode="numeric" placeholder="0" autocomplete="off">
-    <span class="unit">ハピ</span>
+    <div class="preview" id="set-preview"></div>
+
+    <div class="modal-actions">
+      <button class="cancel" id="set-cancel">キャンセル</button>
+      <button class="save" id="set-save">保存</button>
+    </div>
+    <span class="reset-link" id="set-reset">初期値に戻す（手数料30％・レート12.5）</span>
   </div>
-
-  <div class="result green">
-    <div class="cap">希望金額</div>
-    <div class="val"><span id="out2">0</span><small> 円</small></div>
-  </div>
-
-  <button class="clear" id="clear2">クリア</button>
 </div>
 
 <script>
-  var input = document.getElementById('amount');
-  var out = document.getElementById('out');
+  var DEFAULT_FEE = 30;     // ％（÷0.7 と同じ）
+  var DEFAULT_RATE = 12.5;  // ×
 
-  function calc() {
-    var v = parseFloat(input.value);
-    if (isNaN(v)) { out.textContent = '0'; return; }
-    var result = v / 0.7 * 12.5;
-    // 小数点以下を四捨五入し、3桁区切りで表示
-    out.textContent = Math.round(result).toLocaleString('ja-JP');
+  var fee  = parseFloat(localStorage.getItem('happi_fee'))  || DEFAULT_FEE;
+  var rate = parseFloat(localStorage.getItem('happi_rate')) || DEFAULT_RATE;
+  var history = JSON.parse(localStorage.getItem('happi_history') || '[]');
+
+  // 係数（÷する数）= 1 - 手数料率
+  function divisor() { return 1 - fee / 100; }
+
+  function fmt(n) { return Math.round(n).toLocaleString('ja-JP'); }
+  function fmtNum(n) { return (Math.round(n * 100) / 100).toLocaleString('ja-JP'); }
+
+  // ===== 計算式の表示 =====
+  function renderFormulas() {
+    var d = fmtNum(divisor());
+    document.getElementById('formula1').textContent = '希望金額 ÷ ' + d + ' × ' + fmtNum(rate) + ' ＝ ハピ販売価格';
+    document.getElementById('formula2').textContent = 'ハピ販売価格 × ' + d + ' ÷ ' + fmtNum(rate) + ' ＝ 希望金額';
   }
 
-  input.addEventListener('input', calc);
-  document.getElementById('clear').addEventListener('click', function () {
-    input.value = '';
-    out.textContent = '0';
-    input.focus();
-  });
-
-  // ハピ販売価格 → 希望金額（逆算）
+  // ===== 計算 =====
+  var amount = document.getElementById('amount');
+  var out = document.getElementById('out');
   var happi = document.getElementById('happi');
   var out2 = document.getElementById('out2');
 
+  function calc1() {
+    var v = parseFloat(amount.value);
+    out.textContent = isNaN(v) ? '0' : fmt(v / divisor() * rate);
+  }
   function calc2() {
     var v = parseFloat(happi.value);
-    if (isNaN(v)) { out2.textContent = '0'; return; }
-    var result = v * 0.7 / 12.5;
-    out2.textContent = Math.round(result).toLocaleString('ja-JP');
+    out2.textContent = isNaN(v) ? '0' : fmt(v * divisor() / rate);
+  }
+  function recalc() { calc1(); calc2(); }
+
+  amount.addEventListener('input', calc1);
+  happi.addEventListener('input', calc2);
+
+  document.getElementById('clear1').addEventListener('click', function () {
+    amount.value = ''; out.textContent = '0'; amount.focus();
+  });
+  document.getElementById('clear2').addEventListener('click', function () {
+    happi.value = ''; out2.textContent = '0'; happi.focus();
+  });
+
+  // ===== 履歴 =====
+  function saveHistory(dir, inVal, outVal) {
+    if (isNaN(inVal) || inVal === 0) return;
+    history.unshift({
+      dir: dir,            // 'h' = 希望→ハピ, 'y' = ハピ→希望
+      in: inVal,
+      out: outVal,
+      fee: fee,
+      rate: rate
+    });
+    if (history.length > 30) history = history.slice(0, 30);
+    localStorage.setItem('happi_history', JSON.stringify(history));
+    renderHistory();
   }
 
-  happi.addEventListener('input', calc2);
-  document.getElementById('clear2').addEventListener('click', function () {
-    happi.value = '';
-    out2.textContent = '0';
-    happi.focus();
+  document.getElementById('save1').addEventListener('click', function () {
+    var v = parseFloat(amount.value);
+    if (isNaN(v)) return;
+    saveHistory('h', v, v / divisor() * rate);
   });
+  document.getElementById('save2').addEventListener('click', function () {
+    var v = parseFloat(happi.value);
+    if (isNaN(v)) return;
+    saveHistory('y', v, v * divisor() / rate);
+  });
+
+  function renderHistory() {
+    var list = document.getElementById('hist-list');
+    var clearAll = document.getElementById('clear-all');
+    if (history.length === 0) {
+      list.innerHTML = '<div class="empty">履歴はまだありません</div>';
+      clearAll.style.display = 'none';
+      return;
+    }
+    clearAll.style.display = 'block';
+    list.innerHTML = history.map(function (e, i) {
+      var fromTxt, toTxt, toCls;
+      if (e.dir === 'h') {
+        fromTxt = '希望 ' + fmt(e.in) + ' 円';
+        toTxt = '→ ' + fmt(e.out) + ' ハピ';
+        toCls = 'blue';
+      } else {
+        fromTxt = 'ハピ ' + fmt(e.in);
+        toTxt = '→ ' + fmt(e.out) + ' 円';
+        toCls = 'green';
+      }
+      var tag = '手数料' + fmtNum(e.fee) + '% ×' + fmtNum(e.rate);
+      return '<div class="hist-item" data-index="' + i + '">' +
+        '<div class="hist-left"><div class="from">' + fromTxt + '</div>' +
+        '<div class="to ' + toCls + '">' + toTxt + '</div></div>' +
+        '<span class="hist-tag">' + tag + '</span>' +
+        '<button class="del-btn" data-del="' + i + '">🗑 削除</button>' +
+      '</div>';
+    }).join('');
+    attachHandlers();
+  }
+
+  function attachHandlers() {
+    document.querySelectorAll('.hist-item').forEach(function (item) {
+      var pressTimer = null;
+      var longPressed = false;
+      var idx = parseInt(item.getAttribute('data-index'), 10);
+
+      var start = function (ev) {
+        if (ev.target.classList.contains('del-btn')) return;
+        longPressed = false;
+        item.classList.add('pressing');
+        pressTimer = setTimeout(function () {
+          longPressed = true;
+          item.classList.remove('pressing');
+          document.querySelectorAll('.hist-item.show-delete').forEach(function (el) {
+            if (el !== item) el.classList.remove('show-delete');
+          });
+          item.classList.toggle('show-delete');
+          if (navigator.vibrate) navigator.vibrate(30);
+        }, 500);
+      };
+      var cancel = function () { clearTimeout(pressTimer); item.classList.remove('pressing'); };
+
+      item.addEventListener('mousedown', start);
+      item.addEventListener('touchstart', start, { passive: true });
+      item.addEventListener('mouseup', cancel);
+      item.addEventListener('mouseleave', cancel);
+      item.addEventListener('touchend', cancel);
+      item.addEventListener('touchcancel', cancel);
+      item.addEventListener('touchmove', cancel);
+
+      item.addEventListener('click', function (ev) {
+        if (ev.target.classList.contains('del-btn')) {
+          ev.stopPropagation();
+          deleteHistory(parseInt(ev.target.getAttribute('data-del'), 10));
+          return;
+        }
+        if (longPressed) { longPressed = false; return; }
+        if (item.classList.contains('show-delete')) {
+          item.classList.remove('show-delete');
+          return;
+        }
+        loadHistory(idx);
+      });
+    });
+  }
+
+  function deleteHistory(i) {
+    history.splice(i, 1);
+    localStorage.setItem('happi_history', JSON.stringify(history));
+    renderHistory();
+  }
+
+  function loadHistory(i) {
+    var e = history[i];
+    if (e.dir === 'h') {
+      amount.value = e.in; calc1();
+      amount.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      happi.value = e.in; calc2();
+      happi.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
+  document.getElementById('clear-all').addEventListener('click', function () {
+    if (!confirm('履歴をすべて消しますか？')) return;
+    history = [];
+    localStorage.setItem('happi_history', JSON.stringify(history));
+    renderHistory();
+  });
+
+  // ===== 設定モーダル =====
+  var modal = document.getElementById('modal');
+  var setFee = document.getElementById('set-fee');
+  var setRate = document.getElementById('set-rate');
+  var setPreview = document.getElementById('set-preview');
+
+  function updatePreview() {
+    var f = parseFloat(setFee.value);
+    var r = parseFloat(setRate.value);
+    if (isNaN(f) || isNaN(r)) { setPreview.textContent = '数値を入れてください'; return; }
+    var d = 1 - f / 100;
+    setPreview.textContent = '希望金額 ÷ ' + fmtNum(d) + ' × ' + fmtNum(r) + ' ＝ ハピ販売価格';
+  }
+  setFee.addEventListener('input', updatePreview);
+  setRate.addEventListener('input', updatePreview);
+
+  function openSettings() {
+    setFee.value = fee;
+    setRate.value = rate;
+    updatePreview();
+    modal.classList.add('show');
+  }
+  function closeSettings() { modal.classList.remove('show'); }
+
+  document.getElementById('gear').addEventListener('click', openSettings);
+  document.getElementById('set-cancel').addEventListener('click', closeSettings);
+  modal.addEventListener('click', function (ev) { if (ev.target === modal) closeSettings(); });
+
+  document.getElementById('set-save').addEventListener('click', function () {
+    var f = parseFloat(setFee.value);
+    var r = parseFloat(setRate.value);
+    if (isNaN(f) || isNaN(r) || r === 0 || f >= 100) {
+      alert('手数料は0〜99％、レートは0より大きい数を入れてください。');
+      return;
+    }
+    fee = f; rate = r;
+    localStorage.setItem('happi_fee', fee);
+    localStorage.setItem('happi_rate', rate);
+    renderFormulas();
+    recalc();
+    closeSettings();
+  });
+
+  document.getElementById('set-reset').addEventListener('click', function () {
+    setFee.value = DEFAULT_FEE;
+    setRate.value = DEFAULT_RATE;
+    updatePreview();
+  });
+
+  // ===== 初期描画 =====
+  renderFormulas();
+  renderHistory();
 </script>
 </body>
 </html>
