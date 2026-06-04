@@ -194,10 +194,7 @@
     border: 2.5px solid #fff; border-radius: 16px; background: rgba(255,255,255,.55); color: #b06a9a;
     cursor: pointer; font-family: inherit; font-weight: 800;
   }
-  .sync-note {
-    font-size: 12px; color: #fff; text-align: center; padding: 10px 0 0; font-weight: 700;
-    text-shadow: 0 1px 3px rgba(160,110,200,.3);
-  }
+  .sync-note { display: none; }
   .ver { font-size: 11px; color: rgba(255,255,255,.8); text-align: center; padding: 14px 0 0; }
 
   /* モーダル */
@@ -348,7 +345,7 @@
     <div id="hist-list"><div class="empty">履歴はまだありません</div></div>
     <button class="clear-all" id="clear-all">🗑 履歴をすべて消す</button>
     <div class="sync-note" id="sync-note"></div>
-    <div class="ver">ver. 21（削除はシートに残す）</div>
+    <div class="ver">ver. 22（同期表示を非表示）</div>
   </div>
 </div>
 
