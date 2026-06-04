@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>ハピ価格計算</title>
 <style>
   :root {
@@ -169,6 +172,7 @@
     font-size: 12px; color: #fff; text-align: center; padding: 10px 0 0; font-weight: 700;
     text-shadow: 0 1px 3px rgba(160,110,200,.3);
   }
+  .ver { font-size: 11px; color: rgba(255,255,255,.8); text-align: center; padding: 14px 0 0; }
 
   /* モーダル */
   .modal-bg {
@@ -302,6 +306,7 @@
     <div id="hist-list"><div class="empty">履歴はまだありません</div></div>
     <button class="clear-all" id="clear-all">🗑 履歴をすべて消す</button>
     <div class="sync-note" id="sync-note"></div>
+    <div class="ver">ver. 8（端末に保存）</div>
   </div>
 </div>
 
@@ -346,8 +351,9 @@
   var DEFAULT_FEE = 30;     // ％（÷0.7 と同じ）
   var DEFAULT_RATE = 12.5;  // 1円 = 12.5ハピ
 
-  // 最初から入れておくWebhook URL（端末で未設定のときはこれを使う）
-  var DEFAULT_WEBHOOK = 'https://script.google.com/macros/s/AKfycbwTOh5WVf-Zw9VKxtSGpHmU9YasfLCGPI9jtbfqgQ7sN-mW1QaU7PVi2fTJPw7yAcofvg/exec';
+  // Webhookの既定値。GASのアクセスが「全員」に直るまでは空（＝端末保存のみ）にしておく。
+  // 直したら下にURLを入れれば全端末共有が復活する。
+  var DEFAULT_WEBHOOK = '';
 
   // iPhone Safari のプライベートモード等で localStorage が使えなくても落ちないようにする
   function lsGet(k) { try { return lsGet(k); } catch (e) { return null; } }
