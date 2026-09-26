@@ -291,8 +291,8 @@
         <div class="res-label">マルシェ（ハピ）で売るなら</div>
         <div class="line">
           <span class="num big" id="out">0</span><span class="u clo"><svg class="clover"><use href="#clover"/></svg></span><span class="u">ハピ</span>
-          <span class="eqsign">＝</span>
-          <span class="u">手取り</span><span class="num sub" id="echo1">0</span><span class="u">円</span>
+          <span style="white-space:nowrap"><span class="eqsign">＝</span><span class="u">ゲトレ</span><span class="num sub" id="gtEcho1">0</span><span class="u">円</span></span>
+          <span style="white-space:nowrap"><span class="eqsign">＝</span><span class="u">手取り</span><span class="num sub" id="echo1">0</span><span class="u">円</span></span>
         </div>
       </div>
 
@@ -369,7 +369,7 @@
     <div id="hist-list"><div class="empty">履歴はまだありません</div></div>
     <button class="clear-all" id="clear-all">🗑 履歴をすべて消す</button>
     <div class="sync-note" id="sync-note"></div>
-    <div class="ver">ver. 24</div>
+    <div class="ver">ver. 25</div>
   </div>
 </div>
 
@@ -544,8 +544,10 @@
 
   function calc1() {
     var v = parseFloat(amount.value);
-    if (isNaN(v)) { out.textContent = '0'; echo1.textContent = '0'; return; }
+    var gtEcho1 = document.getElementById('gtEcho1');
+    if (isNaN(v)) { out.textContent = '0'; echo1.textContent = '0'; gtEcho1.textContent = '0'; return; }
     out.textContent = fmt(v / divisor() * rate);
+    gtEcho1.textContent = fmt(setPriceOf(v));   // 手取りになるゲームトレード出品額
     echo1.textContent = fmt(v);
   }
   function calc2() {
