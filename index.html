@@ -337,6 +337,30 @@
       </div>
     </div>
 
+    <!-- ゲームトレード価格 → 同じ利益のマルシェハピ -->
+    <div class="card toHapi">
+      <span class="spark" style="top:10px;right:16px;">✨</span>
+      <span class="tag">ゲームトレードと同じ利益にする</span>
+      <label class="field-label" for="gt">ゲームトレードの出品価格（円）</label>
+      <div class="inputbox">
+        <input class="amt" id="gt" type="number" inputmode="numeric" placeholder="0" autocomplete="off">
+        <span class="unit">円</span>
+      </div>
+      <div class="eq res-hapi">
+        <div class="res-label">マルシェではこのハピで出品</div>
+        <div class="line">
+          <span class="num big" id="out4">0</span><span class="u clo"><svg class="clover"><use href="#clover"/></svg></span><span class="u">ハピ</span>
+          <span class="eqsign">＝</span>
+          <span class="u">利益</span><span class="num sub" id="echo4">0</span><span class="u">円</span>
+        </div>
+        <div class="fee-note" id="gt-note"></div>
+      </div>
+      <div class="btn-row">
+        <button class="copy-btn" id="copy4">📋 ハピをコピー</button>
+        <button class="clear-btn" id="clear4">クリア</button>
+      </div>
+    </div>
+
   </div>
 
   <!-- 履歴 -->
@@ -345,7 +369,7 @@
     <div id="hist-list"><div class="empty">履歴はまだありません</div></div>
     <button class="clear-all" id="clear-all">🗑 履歴をすべて消す</button>
     <div class="sync-note" id="sync-note"></div>
-    <div class="ver">ver. 23</div>
+    <div class="ver">ver. 24</div>
   </div>
 </div>
 
@@ -459,6 +483,7 @@
     if (e.dir === 'm') return '手取り' + fmt(e.in) + '円 → マルシェ' + fmt(e.marche) + 'ハピ／RMT' + fmt(e.rmtHapi) + 'ハピ(' + fmt(e.rmtYen) + '円)';
     if (e.dir === 'f') return '設定' + fmt(e.out) + '円＝手取り' + fmt(e.in) + '円';
     if (e.dir === 'y') return fmt(e.in) + 'ハピ＝' + fmt(e.out) + '円';
+    if (e.dir === 'g') return 'ゲームトレード' + fmt(e.in) + '円 → マルシェ' + fmt(e.out) + 'ハピ';
     return fmt(e.out) + 'ハピ＝' + fmt(e.in) + '円';
   }
   // 履歴1件をスプレッドシートへ送る（全項目をJSONで）
@@ -543,16 +568,30 @@
     rmtHapi.textContent = fmt(Math.round(price) / divisor() * rate);   // 設定額 ÷0.7 × レート でハピ換算
     feeNote.textContent = 'RMT手数料 ' + fmtNum(saleFee) + '%（差し引き ' + fmt(price - v) + '円）';
   }
-  function recalc() { calc1(); calc2(); calc3(); }
+  // ゲームトレード価格→マルシェハピ：価格 ×(1−RMT手数料%) ÷(1−マルシェ手数料%) × レート
+  var gt = document.getElementById('gt');
+  var out4 = document.getElementById('out4');
+  var echo4 = document.getElementById('echo4');
+  var gtNote = document.getElementById('gt-note');
+  function gtProfit(v) { return v * (1 - saleFee / 100); }
+  function calc4() {
+    var v = parseFloat(gt.value);
+    gtNote.textContent = 'ゲームトレード手数料 ' + fmtNum(saleFee) + '%・マルシェ手数料 ' + fmtNum(fee) + '%';
+    if (isNaN(v)) { out4.textContent = '0'; echo4.textContent = '0'; return; }
+    echo4.textContent = fmt(gtProfit(v));
+    out4.textContent = fmt(gtProfit(v) / divisor() * rate);
+  }
+  function recalc() { calc1(); calc2(); calc3(); calc4(); }
 
   // ===== 自動保存（3秒）=====
   var timer1 = null, timer2 = null;
-  var lastKey = { h: null, y: null, f: null };
+  var lastKey = { h: null, y: null, f: null, g: null };
 
-  function elOf(dir) { return dir === 'y' ? happi : amount; }   // h と f は同じ入力(amount)を共用
+  function elOf(dir) { return dir === 'y' ? happi : dir === 'g' ? gt : amount; }   // h と f は同じ入力(amount)を共用
   function outOf(dir, v) {
     if (dir === 'h') return v / divisor() * rate;
     if (dir === 'y') return v * divisor() / rate;
+    if (dir === 'g') return gtProfit(v) / divisor() * rate;
     return setPriceOf(v);   // 'f'
   }
 
@@ -594,6 +633,8 @@
   // 入力中はリアルタイム計算のみ（上の入力はハピとRMTの両方を更新）
   amount.addEventListener('input', function () { calc1(); calc3(); });
   happi.addEventListener('input', calc2);
+  gt.addEventListener('input', calc4);
+  gt.addEventListener('change', function () { autoSave('g'); });
 
   // 入力を確定したら履歴に保存：PCはEnter、iPhoneはキーボードの✓（完了→change）
   amount.addEventListener('change', function () { autoSaveMulti(); });
@@ -610,6 +651,9 @@
   });
   document.getElementById('clear2').addEventListener('click', function () {
     happi.value = ''; calc2(); lastKey.y = null; happi.focus();
+  });
+  document.getElementById('clear4').addEventListener('click', function () {
+    gt.value = ''; calc4(); lastKey.g = null; gt.focus();
   });
 
   // ===== コピー（押したら即履歴に保存）=====
@@ -629,7 +673,7 @@
     var v = parseFloat(elOf(dir).value);
     if (isNaN(v) || v === 0) { toast('先に数字を入れてください', true); return; }
     var outVal = outOf(dir, v);
-    var unit = dir === 'h' ? 'ハピ' : '円';
+    var unit = (dir === 'h' || dir === 'g') ? 'ハピ' : '円';
     copyText(String(Math.round(outVal)))
       .then(function () { toast('📋 コピー：' + fmt(outVal) + unit); })
       .catch(function () { toast('📋 コピーしました'); });
@@ -655,11 +699,13 @@
     autoSaveMulti();
   });
   document.getElementById('copy2').addEventListener('click', function () { copyResult('y'); });
+  document.getElementById('copy4').addEventListener('click', function () { copyResult('g'); });
 
   // ===== 履歴 =====
   function saveHistory(dir, inVal, outVal) {
     if (isNaN(inVal) || inVal === 0) return;
     var entry = { id: Date.now(), dir: dir, in: inVal, out: outVal, fee: dir === 'f' ? saleFee : fee, rate: rate };
+    if (dir === 'g') entry.sfee = saleFee;
     histLog.unshift(entry);
     if (histLog.length > 100) histLog = histLog.slice(0, 100);
     renderHistory();                               // まず画面に出す（保存が失敗しても表示は出る）
@@ -688,6 +734,10 @@
       return '設定<span class="y">' + fmt(e.out) + '</span>円<span class="s">＝</span>' +
              '手取り<span class="p">' + fmt(e.in) + '</span>円';
     }
+    if (e.dir === 'g') {  // ゲームトレード→マルシェ
+      return 'ゲームトレード<span class="y">' + fmt(e.in) + '</span>円<span class="s">→</span>' +
+             'マルシェ<span class="p">' + fmt(e.out) + '</span>ハピ';
+    }
     var hapi = e.dir === 'h' ? e.out : e.in;
     var yen  = e.dir === 'h' ? e.in  : e.out;
     return '<span class="p">' + fmt(hapi) + '</span>ハピ<span class="s">＝</span>' +
@@ -708,6 +758,8 @@
         ? 'マルシェ' + fmtNum(e.fee) + '%／RMT' + fmtNum(e.sfee) + '%'
         : e.dir === 'f'
         ? 'RMT手数料' + fmtNum(e.fee) + '%'
+        : e.dir === 'g'
+        ? 'GT' + fmtNum(e.sfee) + '%／マルシェ' + fmtNum(e.fee) + '% ／ ' + fmtNum(e.rate) + 'ハピ/円'
         : 'マルシェ手数料' + fmtNum(e.fee) + '% ／ ' + fmtNum(e.rate) + 'ハピ/円';
       return '<div class="hist-item" data-index="' + i + '">' +
         '<div class="hist-left">' +
@@ -781,6 +833,9 @@
     if (e.dir === 'y') {
       happi.value = e.in; calc2();
       happi.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else if (e.dir === 'g') {
+      gt.value = e.in; calc4();
+      gt.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else {
       // h（ハピ）も f（RMT）も上の手取り入力に戻す
       amount.value = e.in; calc1(); calc3();
