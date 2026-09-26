@@ -387,13 +387,13 @@
 
     <label>ハピ換算レート（実際の購入例を入れてください）</label>
     <div class="field">
-      <input id="set-rate-hapi" type="number" inputmode="numeric" placeholder="87000">
+      <input id="set-rate-hapi" type="number" inputmode="numeric" placeholder="1000">
       <span class="u">ハピ</span>
       <span class="u" style="font-size:18px;color:#cbb8e0;">＝</span>
-      <input id="set-rate-yen" type="number" inputmode="numeric" placeholder="6960">
+      <input id="set-rate-yen" type="number" inputmode="numeric" placeholder="70">
       <span class="u">円</span>
     </div>
-    <p class="hint" id="rate-calc" style="margin:6px 0 0;color:#9b6fe0;font-weight:800">→ 1円 ＝ 12.5 ハピ</p>
+    <p class="hint" id="rate-calc" style="margin:6px 0 0;color:#9b6fe0;font-weight:800">→ 1円 ＝ 14.29 ハピ</p>
 
     <div class="preview" id="set-preview"></div>
 
@@ -415,7 +415,7 @@
       <button class="cancel" id="set-cancel">キャンセル</button>
       <button class="save" id="set-save">保存</button>
     </div>
-    <span class="reset-link" id="set-reset">計算を初期値に戻す（マルシェ30％・レート12.5・RMT8.8％）</span>
+    <span class="reset-link" id="set-reset">計算を初期値に戻す（マルシェ30％・1000ハピ＝70円・RMT8.8％）</span>
   </div>
 </div>
 
@@ -423,7 +423,7 @@
 
 <script>
   var DEFAULT_FEE = 30;     // ％（÷0.7 と同じ）
-  var DEFAULT_RATE = 12.5;  // 1円 = 12.5ハピ
+  var DEFAULT_RATE = 1000 / 70;  // 1000ハピ = 70円（1円 ≒ 14.29ハピ）
 
   // Webhookの既定値（端末で未設定のときはこれを使う）。GASを「全員」で再デプロイすれば共有が有効になる。
   var DEFAULT_WEBHOOK = 'https://script.google.com/macros/s/AKfycbwTOh5WVf-Zw9VKxtSGpHmU9YasfLCGPI9jtbfqgQ7sN-mW1QaU7PVi2fTJPw7yAcofvg/exec';
@@ -433,7 +433,7 @@
   function lsSet(k, v) { try { window.localStorage.setItem(k, v); } catch (e) {} }
 
   var DEFAULT_SALEFEE = 8.8;  // 販売手数料（％）
-  var DEFAULT_RATE_HAPI = 87000, DEFAULT_RATE_YEN = 6960;  // レート入力の例（87000ハピ=6960円→12.5）
+  var DEFAULT_RATE_HAPI = 1000, DEFAULT_RATE_YEN = 70;  // レート入力の例（1000ハピ=70円→14.29）
 
   var fee  = parseFloat(lsGet('happi_fee'))  || DEFAULT_FEE;
   var rate = parseFloat(lsGet('happi_rate')) || DEFAULT_RATE;
