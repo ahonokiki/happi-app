@@ -294,22 +294,13 @@
           <span style="white-space:nowrap"><span class="eqsign">＝</span><span class="u">ゲトレ</span><span class="num sub" id="gtEcho1">0</span><span class="u">円</span></span>
           <span style="white-space:nowrap"><span class="eqsign">＝</span><span class="u">手取り</span><span class="num sub" id="echo1">0</span><span class="u">円</span></span>
         </div>
-      </div>
-
-      <!-- RMT（現金） -->
-      <div class="eq res-rmt">
-        <div class="res-label">RMT（現金）で売るなら</div>
-        <div class="line">
-          <span class="num big" id="rmtHapi">0</span><span class="u clo"><svg class="clover"><use href="#clover"/></svg></span><span class="u">ハピ</span>
-          <span class="eqsign">＝</span>
-          <span class="num sub" id="setOut">0</span><span class="u">円</span>
-        </div>
         <div class="fee-note" id="fee-note"></div>
       </div>
 
+
       <div class="btn-row">
         <button class="copy-btn" id="copy1">📋 ハピをコピー</button>
-        <button class="copy-btn rmt" id="copy3">📋 円をコピー</button>
+        <button class="copy-btn rmt" id="copy3">📋 ゲトレ円をコピー</button>
       </div>
       <button class="clear-btn clear-wide" id="clear1">クリア</button>
     </div>
@@ -369,7 +360,7 @@
     <div id="hist-list"><div class="empty">履歴はまだありません</div></div>
     <button class="clear-all" id="clear-all">🗑 履歴をすべて消す</button>
     <div class="sync-note" id="sync-note"></div>
-    <div class="ver">ver. 25</div>
+    <div class="ver">ver. 26</div>
   </div>
 </div>
 
@@ -399,7 +390,7 @@
 
     <hr>
 
-    <label for="set-salefee">RMT手数料（％）<span style="font-weight:400;color:#b39ccb">／ 手取り→設定価格カード用</span></label>
+    <label for="set-salefee">ゲトレ手数料（％）</label>
     <div class="field">
       <input id="set-salefee" type="number" inputmode="decimal" step="0.1">
       <span class="u">％</span>
@@ -415,7 +406,7 @@
       <button class="cancel" id="set-cancel">キャンセル</button>
       <button class="save" id="set-save">保存</button>
     </div>
-    <span class="reset-link" id="set-reset">計算を初期値に戻す（マルシェ30％・1000ハピ＝70円・RMT8.8％）</span>
+    <span class="reset-link" id="set-reset">計算を初期値に戻す（マルシェ30％・1000ハピ＝70円・ゲトレ8.8％）</span>
   </div>
 </div>
 
@@ -480,7 +471,7 @@
 
   // 履歴1件を人が読める文字列に（スプレッドシートの「表示」列用）
   function histPlain(e) {
-    if (e.dir === 'm') return '手取り' + fmt(e.in) + '円 → マルシェ' + fmt(e.marche) + 'ハピ／RMT' + fmt(e.rmtHapi) + 'ハピ(' + fmt(e.rmtYen) + '円)';
+    if (e.dir === 'm') return '手取り' + fmt(e.in) + '円 → マルシェ' + fmt(e.marche) + 'ハピ／ゲトレ' + fmt(e.rmtYen) + '円';
     if (e.dir === 'f') return '設定' + fmt(e.out) + '円＝手取り' + fmt(e.in) + '円';
     if (e.dir === 'y') return fmt(e.in) + 'ハピ＝' + fmt(e.out) + '円';
     if (e.dir === 'g') return 'ゲームトレード' + fmt(e.in) + '円 → マルシェ' + fmt(e.out) + 'ハピ';
@@ -538,8 +529,6 @@
   var out2 = document.getElementById('out2');
   var echo1 = document.getElementById('echo1');
   var echo2 = document.getElementById('echo2');
-  var setOut = document.getElementById('setOut');
-  var rmtHapi = document.getElementById('rmtHapi');
   var feeNote = document.getElementById('fee-note');
 
   function calc1() {
@@ -560,15 +549,8 @@
   function setPriceOf(netYen) { return netYen / (1 - saleFee / 100); }
   function calc3() {
     var v = parseFloat(amount.value);   // 一発計算：上の入力(手取り)を共用
-    if (isNaN(v)) {
-      setOut.textContent = '0'; rmtHapi.textContent = '0';
-      feeNote.textContent = 'RMT手数料 ' + fmtNum(saleFee) + '%';
-      return;
-    }
-    var price = setPriceOf(v);          // RMT設定額（円）
-    setOut.textContent = fmt(price);
-    rmtHapi.textContent = fmt(Math.round(price) / divisor() * rate);   // 設定額 ÷0.7 × レート でハピ換算
-    feeNote.textContent = 'RMT手数料 ' + fmtNum(saleFee) + '%（差し引き ' + fmt(price - v) + '円）';
+    var base = 'マルシェ手数料 ' + fmtNum(fee) + '%・ゲトレ手数料 ' + fmtNum(saleFee) + '%';
+    feeNote.textContent = isNaN(v) ? base : base + '（ゲトレ差し引き ' + fmt(setPriceOf(v) - v) + '円）';
   }
   // ゲームトレード価格→マルシェハピ：価格 ×(1−RMT手数料%) ÷(1−マルシェ手数料%) × レート
   var gt = document.getElementById('gt');
@@ -730,7 +712,7 @@
     if (e.dir === 'm') {  // 一発計算（マルシェ＋RMTまとめ）
       return '手取り<span class="p">' + fmt(e.in) + '</span>円' +
         '<div class="hist-sub">マルシェ <span class="p">' + fmt(e.marche) + '</span>ハピ' +
-        '　／　RMT <span class="p">' + fmt(e.rmtHapi) + '</span>ハピ（<span class="y">' + fmt(e.rmtYen) + '</span>円）</div>';
+        '　／　ゲトレ <span class="y">' + fmt(e.rmtYen) + '</span>円</div>';
     }
     if (e.dir === 'f') {  // 手取り→設定価格
       return '設定<span class="y">' + fmt(e.out) + '</span>円<span class="s">＝</span>' +
@@ -757,7 +739,7 @@
     clearAll.style.display = 'block';
     list.innerHTML = histLog.map(function (e, i) {
       var tag = e.dir === 'm'
-        ? 'マルシェ' + fmtNum(e.fee) + '%／RMT' + fmtNum(e.sfee) + '%'
+        ? 'マルシェ' + fmtNum(e.fee) + '%／ゲトレ' + fmtNum(e.sfee) + '%'
         : e.dir === 'f'
         ? 'RMT手数料' + fmtNum(e.fee) + '%'
         : e.dir === 'g'
@@ -906,7 +888,7 @@
     var r = rateFromInputs();
     var sf = parseFloat(setSaleFee.value);
     if (isNaN(f) || isNaN(r) || r === 0 || f >= 100 || isNaN(sf) || sf >= 100) {
-      alert('マルシェ手数料・RMT手数料は0〜99％、レートはハピと円を正しく入れてください。');
+      alert('マルシェ手数料・ゲトレ手数料は0〜99％、レートはハピと円を正しく入れてください。');
       return;
     }
     var feeOrRateChanged = (f !== fee || r !== rate || sf !== saleFee);
